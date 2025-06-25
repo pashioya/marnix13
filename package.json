@@ -1,33 +1,49 @@
 {
-  "name": "marnix13",
-  "version": "0.1.0",
+  "name": "next-supabase-saas-kit-turbo-lite",
+  "version": "0.2.0",
   "private": true,
-  "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+  "sideEffects": false,
+  "engines": {
+    "node": ">=v18.18.0"
   },
-  "dependencies": {
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "lucide-react": "^0.514.0",
-    "motion": "^12.17.3",
-    "next": "15.3.3",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "tailwind-merge": "^3.3.1"
+  "author": {
+    "url": "https://makerkit.dev",
+    "name": "MakerKit"
+  },
+  "scripts": {
+    "preinstall": "pnpm run --filter scripts requirements",
+    "postinstall": "manypkg fix",
+    "build": "turbo build --cache-dir=.turbo",
+    "clean": "git clean -xdf node_modules dist .next",
+    "clean:workspaces": "turbo clean",
+    "dev": "cross-env FORCE_COLOR=1 turbo dev --parallel",
+    "format": "turbo format --cache-dir=.turbo --continue -- --cache --cache-location='node_modules/.cache/.prettiercache' --ignore-path='../../.gitignore'",
+    "format:fix": "turbo format --cache-dir=.turbo --continue -- --write --cache --cache-location='node_modules/.cache/.prettiercache' --ignore-path='../../.gitignore'",
+    "lint": "turbo lint --cache-dir=.turbo --continue -- --cache --cache-location 'node_modules/.cache/.eslintcache' && manypkg check",
+    "lint:fix": "turbo lint --cache-dir=.turbo --continue -- --fix --cache --cache-location 'node_modules/.cache/.eslintcache' && manypkg fix",
+    "typecheck": "turbo typecheck --cache-dir=.turbo",
+    "test": "turbo test --cache-dir=.turbo",
+    "update": "pnpm update -r",
+    "syncpack:list": "pnpm dlx syncpack list-mismatches",
+    "syncpack:fix": "pnpm dlx syncpack fix-mismatches",
+    "supabase:web:start": "pnpm --filter web supabase:start",
+    "supabase:web:stop": "pnpm --filter web supabase:stop",
+    "supabase:web:typegen": "pnpm --filter web supabase:typegen",
+    "supabase:web:reset": "pnpm --filter web supabase:reset"
+  },
+  "prettier": "@kit/prettier-config",
+  "packageManager": "pnpm@9.12.0",
+  "pnpm": {
+    "overrides": {
+      "react-is": "19.0.0"
+    }
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "15.3.3",
-    "tailwindcss": "^4",
-    "tw-animate-css": "^1.3.4",
-    "typescript": "^5"
+    "@manypkg/cli": "^0.24.0",
+    "@turbo/gen": "^2.5.0",
+    "cross-env": "^7.0.3",
+    "prettier": "^3.5.3",
+    "turbo": "2.5.0",
+    "typescript": "^5.7.3"
   }
 }
