@@ -10,7 +10,6 @@ import {
   FeatureShowcase,
   FeatureShowcaseIconContainer,
   Hero,
-  Pill,
 } from '@kit/ui/marketing';
 import { Trans } from '@kit/ui/trans';
 
@@ -21,11 +20,6 @@ function Home() {
     <div className={'mt-4 flex flex-col space-y-24 py-14'}>
       <div className={'container mx-auto'}>
         <Hero
-          pill={
-            <Pill label={'Self-Hosted'}>
-              <span>Unified Home Server Portal</span>
-            </Pill>
-          }
           title={
             <>
               <span>Your Home Server,</span>
@@ -34,8 +28,8 @@ function Home() {
           }
           subtitle={
             <span>
-              Marnix 13 provides a unified portal to access all your self-hosted 
-              services. Manage users, provision accounts, and streamline access 
+              Marnix 13 provides a unified portal to access all of my self-hosted
+              services. This allows me to manage users, provision accounts, and streamline access
               to Jellyfin, Nextcloud, and more from one secure dashboard.
             </span>
           }

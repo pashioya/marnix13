@@ -52,7 +52,7 @@ export function Hero({
 
             {subtitle && (
               <div className="flex max-w-lg">
-                <h3 className="text-muted-foreground p-0 text-center font-sans text-2xl font-normal tracking-tight">
+                <h3 className="text-muted-foreground p-0 text-center font-sans text-xl font-normal tracking-tight">
                   {subtitle}
                 </h3>
               </div>
