@@ -6,8 +6,6 @@ export default function HomePage() {
   return (
     <>
       <PageHeader 
-        title="Welcome to Marnix 13"
-        description="Your unified home server portal - Access all your self-hosted services from one place"
       />
 
       <PageBody>
