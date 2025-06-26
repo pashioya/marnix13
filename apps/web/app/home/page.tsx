@@ -1,14 +1,17 @@
 import { PageBody, PageHeader } from '@kit/ui/page';
 
-import { DashboardDemo } from '~/home/_components/dashboard-demo';
+import { ServicesPortal } from './_components/services-portal';
 
 export default function HomePage() {
   return (
     <>
-      <PageHeader description={'Your SaaS at a glance'} />
+      <PageHeader 
+        title="Welcome to Marnix 13"
+        description="Your unified home server portal - Access all your self-hosted services from one place"
+      />
 
       <PageBody>
-        <DashboardDemo />
+        <ServicesPortal />
       </PageBody>
     </>
   );

@@ -1,4 +1,4 @@
-import { Home, User } from 'lucide-react';
+import { Home, User, Users, Settings } from 'lucide-react';
 import { z } from 'zod';
 
 import { NavigationConfigSchema } from '@kit/ui/navigation-schema';
@@ -16,6 +16,21 @@ const routes = [
         path: pathsConfig.app.home,
         Icon: <Home className={iconClasses} />,
         end: true,
+      },
+    ],
+  },
+  {
+    label: 'Administration',
+    children: [
+      {
+        label: 'User Management',
+        path: pathsConfig.app.adminUsers,
+        Icon: <Users className={iconClasses} />,
+      },
+      {
+        label: 'Service Settings',
+        path: pathsConfig.app.adminServices,
+        Icon: <Settings className={iconClasses} />,
       },
     ],
   },

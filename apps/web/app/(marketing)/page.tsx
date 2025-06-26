@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { ArrowRightIcon, LayoutDashboard } from 'lucide-react';
+import { ArrowRightIcon, Server, Users, Shield } from 'lucide-react';
 
 import {
   CtaButton,
@@ -22,20 +22,21 @@ function Home() {
       <div className={'container mx-auto'}>
         <Hero
           pill={
-            <Pill label={'New'}>
-              <span>The leading SaaS Starter Kit for ambitious developers</span>
+            <Pill label={'Self-Hosted'}>
+              <span>Unified Home Server Portal</span>
             </Pill>
           }
           title={
             <>
-              <span>The ultimate SaaS Starter</span>
-              <span>for your next project</span>
+              <span>Your Home Server,</span>
+              <span>Simplified</span>
             </>
           }
           subtitle={
             <span>
-              Build and Ship a SaaS faster than ever before with the next-gen
-              SaaS Starter Kit. Ship your SaaS in days, not months.
+              Marnix 13 provides a unified portal to access all your self-hosted 
+              services. Manage users, provision accounts, and streamline access 
+              to Jellyfin, Nextcloud, and more from one secure dashboard.
             </span>
           }
           cta={<MainCallToActionButton />}
@@ -48,7 +49,7 @@ function Home() {
               width={3558}
               height={2222}
               src={`/images/dashboard.webp`}
-              alt={`App Image`}
+              alt={`Marnix 13 Portal`}
             />
           }
         />
@@ -62,47 +63,129 @@ function Home() {
             heading={
               <>
                 <b className="font-semibold dark:text-white">
-                  The ultimate SaaS Starter Kit
+                  Unified Home Server Management
                 </b>
                 .{' '}
                 <span className="text-muted-foreground font-normal">
-                  Unleash your creativity and build your SaaS faster than ever
-                  with Makerkit.
+                  Streamline access to all your self-hosted services with 
+                  centralized authentication and user management.
                 </span>
               </>
             }
             icon={
               <FeatureShowcaseIconContainer>
-                <LayoutDashboard className="h-5" />
-                <span>All-in-one solution</span>
+                <Server className="h-5" />
+                <span>Home Server Portal</span>
               </FeatureShowcaseIconContainer>
             }
           >
             <FeatureGrid>
               <FeatureCard
                 className={'relative col-span-2 overflow-hidden'}
-                label={'Beautiful Dashboard'}
-                description={`Makerkit provides a beautiful dashboard to manage your SaaS business.`}
+                label={'Centralized Dashboard'}
+                description={`Access Jellyfin, Nextcloud, Radarr, Sonarr, and more from one beautiful interface.`}
               />
 
               <FeatureCard
                 className={
                   'relative col-span-2 w-full overflow-hidden lg:col-span-1'
                 }
-                label={'Authentication'}
-                description={`Makerkit provides a variety of providers to allow your users to sign in.`}
+                label={'User Management'}
+                description={`Admin approval workflow with automatic account provisioning across services.`}
               />
 
               <FeatureCard
                 className={'relative col-span-2 overflow-hidden lg:col-span-1'}
-                label={'Multi Tenancy'}
-                description={`Multi tenant memberships for your SaaS business.`}
+                label={'Secure Authentication'}
+                description={`Role-based access control with Supabase integration.`}
               />
 
               <FeatureCard
                 className={'relative col-span-2 overflow-hidden'}
-                label={'Billing'}
-                description={`Makerkit supports multiple payment gateways to charge your customers.`}
+                label={'Mobile Integration'}
+                description={`One-click setup for Infuse and other mobile clients with your media servers.`}
+              />
+            </FeatureGrid>
+          </FeatureShowcase>
+
+          <FeatureShowcase
+            heading={
+              <>
+                <b className="font-semibold dark:text-white">
+                  Seamless Service Integration
+                </b>
+                .{' '}
+                <span className="text-muted-foreground font-normal">
+                  Automatically provision user accounts across your self-hosted 
+                  services when new users are approved.
+                </span>
+              </>
+            }
+            icon={
+              <FeatureShowcaseIconContainer>
+                <Users className="h-5" />
+                <span>Auto Provisioning</span>
+              </FeatureShowcaseIconContainer>
+            }
+          >
+            <FeatureGrid>
+              <FeatureCard
+                className={'relative col-span-2 overflow-hidden lg:col-span-1'}
+                label={'Jellyfin Integration'}
+                description={`Automatic user creation in your Jellyfin media server.`}
+              />
+
+              <FeatureCard
+                className={'relative col-span-2 overflow-hidden lg:col-span-1'}
+                label={'Nextcloud Sync'}
+                description={`Provision cloud storage accounts automatically.`}
+              />
+
+              <FeatureCard
+                className={'relative col-span-2 overflow-hidden'}
+                label={'Admin Dashboard'}
+                description={`Review and approve new user registrations with built-in monitoring.`}
+              />
+            </FeatureGrid>
+          </FeatureShowcase>
+
+          <FeatureShowcase
+            heading={
+              <>
+                <b className="font-semibold dark:text-white">
+                  Built for Self-Hosters
+                </b>
+                .{' '}
+                <span className="text-muted-foreground font-normal">
+                  Designed specifically for home server enthusiasts who want 
+                  professional-grade user management.
+                </span>
+              </>
+            }
+            icon={
+              <FeatureShowcaseIconContainer>
+                <Shield className="h-5" />
+                <span>Self-Hosted First</span>
+              </FeatureShowcaseIconContainer>
+            }
+          >
+            <FeatureGrid>
+              <FeatureCard
+                className={'relative col-span-2 overflow-hidden'}
+                label={'Privacy Focused'}
+                description={`Your data stays on your servers. No external dependencies beyond your chosen services.`}
+              />
+
+              <FeatureCard
+                className={'relative col-span-2 overflow-hidden lg:col-span-1'}
+                label={'Open Source'}
+                description={`Built on Makerkit with full source code access.`}
+              />
+
+              <FeatureCard
+                className={'relative col-span-2 overflow-hidden lg:col-span-1'}
+                label={'Easy Deployment'}
+                description={`Deploy on Vercel, Netlify, or self-host alongside your other services.`}
               />
             </FeatureGrid>
           </FeatureShowcase>
@@ -121,7 +204,7 @@ function MainCallToActionButton() {
         <Link href={'/auth/sign-up'}>
           <span className={'flex items-center space-x-0.5'}>
             <span>
-              <Trans i18nKey={'common:getStarted'} />
+              Request Access
             </span>
 
             <ArrowRightIcon
