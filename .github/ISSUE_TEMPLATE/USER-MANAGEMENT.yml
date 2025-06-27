@@ -1,0 +1,94 @@
+name: "👤 User Management Issue"
+description: Report issues with user registration, approval, or account management
+title: "👤 [USER] - <title>"
+labels: [
+  "user-management",
+  "bug"
+]
+body:
+  - type: dropdown
+    id: issue_type
+    attributes:
+      label: "Issue Type"
+      description: What type of user management issue are you experiencing?
+      options:
+        - User Registration Not Working
+        - Approval Process Issue
+        - Account Provisioning Failed
+        - Role/Permission Problem
+        - Profile Management Issue
+        - Password Reset Issue
+        - Email Notification Issue
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: "Issue Description"
+      description: Please describe the user management issue in detail
+      placeholder: The issue occurs when...
+    validations:
+      required: true
+  - type: textarea
+    id: user_details
+    attributes:
+      label: "User Details"
+      description: Please provide relevant user information (anonymize if needed)
+      value: |
+        - User Email (or anonymized): 
+        - User Role: 
+        - Registration Date: 
+        - Approval Status: 
+        - Affected Services: 
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: "Steps to Reproduce"
+      description: How can we reproduce this issue?
+      value: |
+        1. Navigate to...
+        2. Enter user details...
+        3. Click...
+        4. See error/issue
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: "Expected Behavior"
+      description: What should happen in the user management flow?
+      placeholder: The user should be able to...
+    validations:
+      required: true
+  - type: textarea
+    id: error_messages
+    attributes:
+      label: "Error Messages"
+      description: Any error messages shown to the user or in logs
+      render: bash
+    validations:
+      required: false
+  - type: dropdown
+    id: reporter_role
+    attributes:
+      label: "Reporter Role"
+      description: What is your role in the system?
+      options:
+        - Admin
+        - Affected User
+        - Other User
+    validations:
+      required: true
+  - type: checkboxes
+    id: services_affected
+    attributes:
+      label: "Services Affected"
+      description: Which service accounts are affected? (check all that apply)
+      options:
+        - label: Jellyfin account provisioning
+        - label: Nextcloud account provisioning
+        - label: Marnix 13 portal access
+        - label: Other services

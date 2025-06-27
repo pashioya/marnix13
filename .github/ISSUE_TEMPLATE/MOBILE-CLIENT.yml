@@ -1,0 +1,112 @@
+name: "📱 Mobile Client Setup Issue"
+description: Report issues with mobile client setup or configuration (Infuse, Radarr/Sonarr clients)
+title: "📱 [MOBILE] - <client_name> - <title>"
+labels: [
+  "mobile-client",
+  "setup",
+  "bug"
+]
+body:
+  - type: dropdown
+    id: client
+    attributes:
+      label: "Mobile Client"
+      description: Which mobile client are you having issues with?
+      options:
+        - Infuse (iOS/tvOS)
+        - Radarr Mobile Client
+        - Sonarr Mobile Client
+        - Other Jellyfin Client
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: "Platform"
+      description: What device/platform are you using?
+      options:
+        - iOS (iPhone)
+        - iOS (iPad)
+        - Android (Phone)
+        - Android (Tablet)
+        - Apple TV
+        - Android TV
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: "Issue Description"
+      description: Please describe the mobile client setup issue
+      placeholder: The mobile client setup is not working because...
+    validations:
+      required: true
+  - type: textarea
+    id: setup_step
+    attributes:
+      label: "Setup Step"
+      description: At which step in the setup process does the issue occur?
+      value: |
+        - [ ] Initial client download
+        - [ ] Server connection setup
+        - [ ] Authentication
+        - [ ] Service configuration
+        - [ ] Media playback/access
+        - [ ] Other: 
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: "Steps to Reproduce"
+      description: Detailed steps to reproduce the issue
+      value: |
+        1. Open the mobile app...
+        2. Navigate to...
+        3. Enter server details...
+        4. See error/issue
+    validations:
+      required: true
+  - type: textarea
+    id: server_info
+    attributes:
+      label: "Server Information"
+      description: Information about the server connection
+      value: |
+        - Server URL: 
+        - Connection Type: (Local/Remote)
+        - Authentication Method: 
+        - Any custom ports or settings: 
+    validations:
+      required: true
+  - type: textarea
+    id: error_details
+    attributes:
+      label: "Error Details"
+      description: Any error messages or codes from the mobile client
+      render: bash
+    validations:
+      required: false
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: "Expected Behavior"
+      description: What should happen during the setup process?
+      placeholder: The client should automatically configure and connect to...
+    validations:
+      required: true
+  - type: dropdown
+    id: network
+    attributes:
+      label: "Network Environment"
+      description: Where are you trying to connect from?
+      options:
+        - Same local network as server
+        - Remote/external network
+        - VPN connection
+        - Cellular data
+        - Not sure
+    validations:
+      required: true

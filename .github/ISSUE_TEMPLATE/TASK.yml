@@ -1,0 +1,92 @@
+name: "📋 Task/Epic"
+description: Create a development task or epic for the Marnix 13 project
+title: "📋 [TASK] - <title>"
+labels: [
+  "task"
+]
+body:
+  - type: dropdown
+    id: milestone
+    attributes:
+      label: "Milestone"
+      description: Which milestone does this task belong to?
+      options:
+        - "Milestone 1: Foundation & Authentication"
+        - "Milestone 2: Service Management"
+        - "Milestone 3: External Service Integration"
+        - "Milestone 4: User Experience & Onboarding"
+        - "Milestone 5: Admin Dashboard & Management"
+        - "Milestone 6: Advanced Features & Polish"
+        - "Milestone 7: Security & Deployment"
+        - "Milestone 8: Documentation & Testing"
+        - "Future Enhancement"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: "Task Description"
+      description: Detailed description of what needs to be accomplished
+      placeholder: This task involves implementing...
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: "Acceptance Criteria"
+      description: What needs to be completed for this task to be considered done?
+      value: |
+        - [ ] Criterion 1
+        - [ ] Criterion 2
+        - [ ] Criterion 3
+    validations:
+      required: true
+  - type: textarea
+    id: technical_requirements
+    attributes:
+      label: "Technical Requirements"
+      description: Any specific technical considerations or requirements
+      placeholder: This task requires integration with...
+    validations:
+      required: false
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: "Dependencies"
+      description: What other tasks or tickets must be completed before this one?
+      placeholder: This task depends on completion of...
+    validations:
+      required: false
+  - type: dropdown
+    id: priority
+    attributes:
+      label: "Priority"
+      description: How important is this task?
+      options:
+        - "P0 - Critical (Blocks other work)"
+        - "P1 - High (Important for milestone)"
+        - "P2 - Medium (Nice to have)"
+        - "P3 - Low (Future consideration)"
+    validations:
+      required: true
+  - type: dropdown
+    id: estimated_effort
+    attributes:
+      label: "Estimated Effort"
+      description: How much work is this expected to be?
+      options:
+        - "XS - 1-2 hours"
+        - "S - 1-2 days"
+        - "M - 3-5 days"
+        - "L - 1-2 weeks"
+        - "XL - Epic (needs breakdown)"
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: "Additional Notes"
+      description: Any other relevant information, links, or context
+      placeholder: Additional context or considerations...
+    validations:
+      required: false

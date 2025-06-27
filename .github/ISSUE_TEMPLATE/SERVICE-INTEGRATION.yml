@@ -1,0 +1,88 @@
+name: "🔧 Service Integration Issue"
+description: Report an issue with external service integration (Jellyfin, Nextcloud, Radarr, Sonarr)
+title: "🔧 [SERVICE] - <service_name> - <title>"
+labels: [
+  "service-integration",
+  "bug"
+]
+body:
+  - type: dropdown
+    id: service
+    attributes:
+      label: "Affected Service"
+      description: Which service is experiencing issues?
+      options:
+        - Jellyfin
+        - Nextcloud
+        - Radarr
+        - Sonarr
+        - Manga Reader
+        - Multiple Services
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: "Issue Description"
+      description: Please describe the issue you're experiencing with the service integration
+      placeholder: The service is not working because...
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: "Steps to Reproduce"
+      description: How can we reproduce this issue?
+      value: |
+        1. Go to '...'
+        2. Click on '...'
+        3. See error
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: "Expected Behavior"
+      description: What should happen instead?
+      placeholder: The service should...
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: "Actual Behavior"
+      description: What actually happens?
+      placeholder: Instead, the service...
+    validations:
+      required: true
+  - type: textarea
+    id: service_info
+    attributes:
+      label: "Service Information"
+      description: Please provide version information and configuration details
+      value: |
+        - Service Version: 
+        - Service URL: 
+        - Authentication Method: 
+        - Any custom configuration: 
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: "Logs"
+      description: Please include relevant logs from both Marnix 13 and the external service
+      render: bash
+    validations:
+      required: false
+  - type: dropdown
+    id: user_type
+    attributes:
+      label: "User Type"
+      description: Are you an admin or regular user?
+      options:
+        - Admin User
+        - Regular User
+    validations:
+      required: true
