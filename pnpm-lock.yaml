@@ -62,6 +62,9 @@ importers:
       '@kit/next':
         specifier: workspace:*
         version: link:../../packages/next
+      '@kit/services':
+        specifier: workspace:*
+        version: link:../../packages/features/services
       '@kit/supabase':
         specifier: workspace:*
         version: link:../../packages/supabase
@@ -316,6 +319,25 @@ importers:
       zod:
         specifier: ^3.25.32
         version: 3.25.32
+
+  packages/features/services:
+    dependencies:
+      '@kit/supabase':
+        specifier: workspace:*
+        version: link:../../supabase
+      zod:
+        specifier: ^3.25.32
+        version: 3.25.32
+    devDependencies:
+      '@kit/eslint-config':
+        specifier: workspace:*
+        version: link:../../../tooling/eslint
+      '@kit/prettier-config':
+        specifier: workspace:*
+        version: link:../../../tooling/prettier
+      '@kit/tsconfig':
+        specifier: workspace:*
+        version: link:../../../tooling/typescript
 
   packages/i18n:
     dependencies:
