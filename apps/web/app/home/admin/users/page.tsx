@@ -5,7 +5,7 @@ import { UserManagement } from './_components/user-management';
 export default function UsersPage() {
   return (
     <>
-      <PageHeader 
+      <PageHeader
         title="User Management"
         description="Review and approve new user registrations"
       />

@@ -1,9 +1,16 @@
-import type { CreateService, ServiceCategoryType, ServiceTypeType } from '../schema/service.schema';
+import type {
+  CreateService,
+  ServiceCategoryType,
+  ServiceTypeType,
+} from '../schema/service.schema';
 
 /**
  * Default service configurations for common services
  */
-export const DEFAULT_SERVICE_CONFIGS: Record<ServiceTypeType, Partial<CreateService>> = {
+export const DEFAULT_SERVICE_CONFIGS: Record<
+  ServiceTypeType,
+  Partial<CreateService>
+> = {
   jellyfin: {
     category: 'media',
     serviceType: 'jellyfin',
@@ -136,7 +143,10 @@ export const DEFAULT_SERVICE_CONFIGS: Record<ServiceTypeType, Partial<CreateServ
 /**
  * Service categories with their descriptions
  */
-export const SERVICE_CATEGORIES: Record<ServiceCategoryType, { label: string; description: string }> = {
+export const SERVICE_CATEGORIES: Record<
+  ServiceCategoryType,
+  { label: string; description: string }
+> = {
   media: {
     label: 'Media',
     description: 'Video, audio, and media streaming services',
@@ -174,16 +184,24 @@ export const SERVICE_CATEGORIES: Record<ServiceCategoryType, { label: string; de
 /**
  * Get default configuration for a service type
  */
-export function getDefaultServiceConfig(serviceType: ServiceTypeType): Partial<CreateService> {
+export function getDefaultServiceConfig(
+  serviceType: ServiceTypeType,
+): Partial<CreateService> {
   return { ...DEFAULT_SERVICE_CONFIGS[serviceType] };
 }
 
 /**
  * Generate a unique service key based on service type and name
  */
-export function generateServiceKey(serviceType: ServiceTypeType, name: string): string {
+export function generateServiceKey(
+  serviceType: ServiceTypeType,
+  name: string,
+): string {
   if (serviceType === 'custom') {
-    return name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '-')
+      .replace(/-+/g, '-');
   }
   return serviceType;
 }

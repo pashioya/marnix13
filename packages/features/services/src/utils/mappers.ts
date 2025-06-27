@@ -1,5 +1,10 @@
 import type { Database } from '@kit/supabase/database';
-import type { Service, CreateService, UpdateService } from '../schema/service.schema';
+
+import type {
+  CreateService,
+  Service,
+  UpdateService,
+} from '../schema/service.schema';
 
 // Database row type
 export type ServiceRow = Database['public']['Tables']['services']['Row'];
@@ -19,7 +24,9 @@ export function mapServiceRowToService(row: ServiceRow): Service {
     enabled: row.enabled,
     autoProvision: row.auto_provision,
     status: row.status as Service['status'],
-    lastHealthCheck: row.last_health_check ? new Date(row.last_health_check) : undefined,
+    lastHealthCheck: row.last_health_check
+      ? new Date(row.last_health_check)
+      : undefined,
     healthCheckInterval: row.health_check_interval,
     category: row.category as Service['category'],
     serviceType: row.service_type as Service['serviceType'],
@@ -27,8 +34,9 @@ export function mapServiceRowToService(row: ServiceRow): Service {
     requiresAuth: row.requires_auth,
     sslEnabled: row.ssl_enabled,
     supportsUserProvisioning: row.supports_user_provisioning,
-    userProvisioningConfig: row.user_provisioning_config ? 
-      JSON.parse(JSON.stringify(row.user_provisioning_config)) : undefined,
+    userProvisioningConfig: row.user_provisioning_config
+      ? JSON.parse(JSON.stringify(row.user_provisioning_config))
+      : undefined,
     defaultUserRole: row.default_user_role || undefined,
     version: row.version || undefined,
     icon: row.icon || undefined,
@@ -45,7 +53,9 @@ export function mapServiceRowToService(row: ServiceRow): Service {
 /**
  * Convert a CreateService type to database insert format
  */
-export function mapCreateServiceToInsert(service: CreateService): ServiceInsert {
+export function mapCreateServiceToInsert(
+  service: CreateService,
+): ServiceInsert {
   return {
     service_key: service.id,
     name: service.name,
@@ -63,8 +73,9 @@ export function mapCreateServiceToInsert(service: CreateService): ServiceInsert 
     requires_auth: service.requiresAuth,
     ssl_enabled: service.sslEnabled,
     supports_user_provisioning: service.supportsUserProvisioning,
-    user_provisioning_config: service.userProvisioningConfig ? 
-      JSON.parse(JSON.stringify(service.userProvisioningConfig)) : null,
+    user_provisioning_config: service.userProvisioningConfig
+      ? JSON.parse(JSON.stringify(service.userProvisioningConfig))
+      : null,
     default_user_role: service.defaultUserRole,
     version: service.version,
     icon: service.icon,
@@ -79,7 +90,9 @@ export function mapCreateServiceToInsert(service: CreateService): ServiceInsert 
 /**
  * Convert an UpdateService type to database update format
  */
-export function mapUpdateServiceToUpdate(service: UpdateService): ServiceUpdate {
+export function mapUpdateServiceToUpdate(
+  service: UpdateService,
+): ServiceUpdate {
   const update: ServiceUpdate = {
     updated_by: service.updatedBy,
     updated_at: service.updatedAt?.toISOString(),
@@ -87,11 +100,13 @@ export function mapUpdateServiceToUpdate(service: UpdateService): ServiceUpdate 
 
   // Only include fields that are defined in the update
   if (service.name !== undefined) update.name = service.name;
-  if (service.description !== undefined) update.description = service.description;
+  if (service.description !== undefined)
+    update.description = service.description;
   if (service.url !== undefined) update.url = service.url;
   if (service.apiKey !== undefined) update.api_key = service.apiKey;
   if (service.enabled !== undefined) update.enabled = service.enabled;
-  if (service.autoProvision !== undefined) update.auto_provision = service.autoProvision;
+  if (service.autoProvision !== undefined)
+    update.auto_provision = service.autoProvision;
   if (service.status !== undefined) update.status = service.status;
   if (service.lastHealthCheck !== undefined) {
     update.last_health_check = service.lastHealthCheck?.toISOString();
@@ -100,23 +115,27 @@ export function mapUpdateServiceToUpdate(service: UpdateService): ServiceUpdate 
     update.health_check_interval = service.healthCheckInterval;
   }
   if (service.category !== undefined) update.category = service.category;
-  if (service.serviceType !== undefined) update.service_type = service.serviceType;
+  if (service.serviceType !== undefined)
+    update.service_type = service.serviceType;
   if (service.authType !== undefined) update.auth_type = service.authType;
-  if (service.requiresAuth !== undefined) update.requires_auth = service.requiresAuth;
+  if (service.requiresAuth !== undefined)
+    update.requires_auth = service.requiresAuth;
   if (service.sslEnabled !== undefined) update.ssl_enabled = service.sslEnabled;
   if (service.supportsUserProvisioning !== undefined) {
     update.supports_user_provisioning = service.supportsUserProvisioning;
   }
   if (service.userProvisioningConfig !== undefined) {
-    update.user_provisioning_config = service.userProvisioningConfig ? 
-      JSON.parse(JSON.stringify(service.userProvisioningConfig)) : null;
+    update.user_provisioning_config = service.userProvisioningConfig
+      ? JSON.parse(JSON.stringify(service.userProvisioningConfig))
+      : null;
   }
   if (service.defaultUserRole !== undefined) {
     update.default_user_role = service.defaultUserRole;
   }
   if (service.version !== undefined) update.version = service.version;
   if (service.icon !== undefined) update.icon = service.icon;
-  if (service.documentation !== undefined) update.documentation = service.documentation;
+  if (service.documentation !== undefined)
+    update.documentation = service.documentation;
   if (service.tags !== undefined) update.tags = service.tags;
 
   return update;

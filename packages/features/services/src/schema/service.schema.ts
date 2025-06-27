@@ -4,13 +4,13 @@ import { z } from 'zod';
 export const ServiceStatus = z.enum(['online', 'offline', 'error', 'unknown']);
 export const ServiceCategory = z.enum([
   'media',
-  'storage', 
+  'storage',
   'management',
   'productivity',
   'security',
   'monitoring',
   'development',
-  'communication'
+  'communication',
 ]);
 
 export const ServiceType = z.enum([
@@ -25,7 +25,7 @@ export const ServiceType = z.enum([
   'homeassistant',
   'grafana',
   'prometheus',
-  'custom'
+  'custom',
 ]);
 
 export const AuthType = z.enum(['api_key', 'basic_auth', 'oauth', 'none']);
@@ -45,38 +45,38 @@ export const ServiceSchema = z.object({
   id: z.string().min(1).max(50),
   name: z.string().min(1).max(100),
   description: z.string().max(500),
-  
+
   // Configuration
   url: z.string().url(),
   apiKey: z.string().optional(),
   enabled: z.boolean().default(true),
   autoProvision: z.boolean().default(false),
-  
+
   // Status & Health
   status: ServiceStatus.default('unknown'),
   lastHealthCheck: z.date().optional(),
   healthCheckInterval: z.number().int().min(1).max(1440).default(30), // 1 minute to 24 hours
-  
+
   // Service categorization
   category: ServiceCategory,
   serviceType: ServiceType,
-  
+
   // Authentication & Security
   authType: AuthType.default('none'),
   requiresAuth: z.boolean().default(false),
   sslEnabled: z.boolean().default(false),
-  
+
   // User management
   supportsUserProvisioning: z.boolean().default(false),
   userProvisioningConfig: UserProvisioningConfigSchema.optional(),
   defaultUserRole: z.string().optional(),
-  
+
   // Metadata
   version: z.string().optional(),
   icon: z.string().optional(),
   documentation: z.string().url().optional(),
   tags: z.array(z.string()).default([]),
-  
+
   // Timestamps & ownership
   accountId: z.string().uuid(),
   createdAt: z.date().default(() => new Date()),
@@ -92,12 +92,14 @@ export const CreateServiceSchema = ServiceSchema.omit({
 });
 
 // Schema for updating a service (all fields optional except id)
-export const UpdateServiceSchema = ServiceSchema.partial().required({
-  id: true,
-  updatedBy: true,
-}).extend({
-  updatedAt: z.date().default(() => new Date()),
-});
+export const UpdateServiceSchema = ServiceSchema.partial()
+  .required({
+    id: true,
+    updatedBy: true,
+  })
+  .extend({
+    updatedAt: z.date().default(() => new Date()),
+  });
 
 // Schema for service health check
 export const ServiceHealthCheckSchema = z.object({
@@ -126,4 +128,6 @@ export type ServiceStatusType = z.infer<typeof ServiceStatus>;
 export type ServiceCategoryType = z.infer<typeof ServiceCategory>;
 export type ServiceTypeType = z.infer<typeof ServiceType>;
 export type AuthTypeType = z.infer<typeof AuthType>;
-export type UserProvisioningConfig = z.infer<typeof UserProvisioningConfigSchema>;
+export type UserProvisioningConfig = z.infer<
+  typeof UserProvisioningConfigSchema
+>;

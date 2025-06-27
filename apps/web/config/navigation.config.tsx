@@ -1,4 +1,4 @@
-import { Home, User, Users, Settings } from 'lucide-react';
+import { Home, Settings, User, Users } from 'lucide-react';
 import { z } from 'zod';
 
 import { NavigationConfigSchema } from '@kit/ui/navigation-schema';
