@@ -57,44 +57,34 @@ alter table public.services enable row level security;
 -- Users can only see services from their own accounts
 create policy "Users can view services from their accounts" on public.services
     for select using (
-        account_id in (
-            select account_id from public.account_memberships 
-            where user_id = auth.uid()
-        )
+        account_id = auth.uid()
     );
 
 -- Users can create services for accounts they belong to
 create policy "Users can create services for their accounts" on public.services
     for insert with check (
-        account_id in (
-            select account_id from public.account_memberships 
-            where user_id = auth.uid()
-        )
+        account_id = auth.uid()
     );
 
 -- Users can update services for accounts they belong to
 create policy "Users can update services for their accounts" on public.services
     for update using (
-        account_id in (
-            select account_id from public.account_memberships 
-            where user_id = auth.uid()
-        )
+        account_id = auth.uid()
     );
 
 -- Users can delete services for accounts they belong to
 create policy "Users can delete services for their accounts" on public.services
     for delete using (
-        account_id in (
-            select account_id from public.account_memberships 
-            where user_id = auth.uid()
-        )
+        account_id = auth.uid()
     );
 
 -- Add trigger to update the updated_at timestamp
 create or replace function public.update_services_updated_at()
-returns trigger as $$
+returns trigger
+set search_path = ''
+as $$
 begin
-    new.updated_at = now();
+    new.updated_at = pg_catalog.now();
     return new;
 end;
 $$ language plpgsql;
