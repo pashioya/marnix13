@@ -5,8 +5,7 @@ import { ServicesPortal } from './_components/services-portal';
 export default function HomePage() {
   return (
     <>
-      <PageHeader 
-      />
+      <PageHeader />
 
       <PageBody>
         <ServicesPortal />

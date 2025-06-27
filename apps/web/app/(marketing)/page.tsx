@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { ArrowRightIcon, Server, Users, Shield } from 'lucide-react';
+import { ArrowRightIcon, Server, Shield, Users } from 'lucide-react';
 
 import {
   CtaButton,
@@ -28,9 +28,10 @@ function Home() {
           }
           subtitle={
             <span>
-              Marnix 13 provides a unified portal to access all of my self-hosted
-              services. This allows me to manage users, provision accounts, and streamline access
-              to Jellyfin, Nextcloud, and more from one secure dashboard.
+              Marnix 13 provides a unified portal to access all of my
+              self-hosted services. This allows me to manage users, provision
+              accounts, and streamline access to Jellyfin, Nextcloud, and more
+              from one secure dashboard.
             </span>
           }
           cta={<MainCallToActionButton />}
@@ -61,7 +62,7 @@ function Home() {
                 </b>
                 .{' '}
                 <span className="text-muted-foreground font-normal">
-                  Streamline access to all your self-hosted services with 
+                  Streamline access to all your self-hosted services with
                   centralized authentication and user management.
                 </span>
               </>
@@ -110,7 +111,7 @@ function Home() {
                 </b>
                 .{' '}
                 <span className="text-muted-foreground font-normal">
-                  Automatically provision user accounts across your self-hosted 
+                  Automatically provision user accounts across your self-hosted
                   services when new users are approved.
                 </span>
               </>
@@ -151,7 +152,7 @@ function Home() {
                 </b>
                 .{' '}
                 <span className="text-muted-foreground font-normal">
-                  Designed specifically for home server enthusiasts who want 
+                  Designed specifically for home server enthusiasts who want
                   professional-grade user management.
                 </span>
               </>
@@ -197,9 +198,7 @@ function MainCallToActionButton() {
       <CtaButton>
         <Link href={'/auth/sign-up'}>
           <span className={'flex items-center space-x-0.5'}>
-            <span>
-              Request Access
-            </span>
+            <span>Request Access</span>
 
             <ArrowRightIcon
               className={
