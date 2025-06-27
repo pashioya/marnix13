@@ -5,7 +5,7 @@ import { ServiceSettings } from './_components/service-settings';
 export default function ServicesPage() {
   return (
     <>
-      <PageHeader 
+      <PageHeader
         title="Service Settings"
         description="Configure your self-hosted services and monitor their status"
       />

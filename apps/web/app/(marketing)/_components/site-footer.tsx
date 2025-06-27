@@ -31,7 +31,7 @@ export function SiteFooter() {
               label: <Trans i18nKey="auth:signUp" />,
             },
           ],
-        }
+        },
       ]}
     />
   );
