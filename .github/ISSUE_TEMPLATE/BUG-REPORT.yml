@@ -1,23 +1,42 @@
 name: "🐛 Bug Report"
-description: Create a new ticket for a bug.
+description: Report a bug in Marnix 13
 title: "🐛 [BUG] - <title>"
 labels: [
   "bug"
 ]
 body:
+  - type: dropdown
+    id: component
+    attributes:
+      label: "Component"
+      description: Which part of Marnix 13 is affected?
+      options:
+        - Authentication & Login
+        - User Registration/Approval
+        - Service Dashboard
+        - Admin Panel
+        - Jellyfin Integration
+        - Nextcloud Integration
+        - Radarr/Sonarr Integration
+        - Mobile Client Setup
+        - UI/UX
+        - API/Backend
+        - Other
+    validations:
+      required: true
   - type: textarea
     id: description
     attributes:
-      label: "Description"
-      description: Please enter an explicit description of your issue
-      placeholder: Short and explicit description of your incident...
+      label: "Bug Description"
+      description: Please provide a clear description of the bug
+      placeholder: The bug occurs when...
     validations:
       required: true
   - type: textarea
     id: reprod
     attributes:
-      label: "Reproduction steps"
-      description: Please enter an explicit description of your issue
+      label: "Steps to Reproduce"
+      description: How can we reproduce this bug?
       value: |
         1. Go to '...'
         2. Click on '....'
@@ -27,11 +46,40 @@ body:
     validations:
       required: true
   - type: textarea
+    id: expected
+    attributes:
+      label: "Expected Behavior"
+      description: What should happen instead?
+      placeholder: I expected...
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: "Actual Behavior"
+      description: What actually happened?
+      placeholder: Instead, what happened was...
+    validations:
+      required: true
+  - type: textarea
     id: logs
     attributes:
       label: "Logs"
-      description: Please copy and paste any relevant log output. Please verify both the server logs and the browser logs (if applicable). This will be automatically formatted into code, so no need for backticks. If you cannot provide logs, simply write N/A.
+      description: Please provide relevant log output from browser console, server logs, or service logs. If you cannot provide logs, write N/A.
       render: bash
+  - type: textarea
+    id: environment
+    attributes:
+      label: "Environment Details"
+      description: Please provide details about your environment
+      value: |
+        - Marnix 13 Version: 
+        - Browser: 
+        - OS: 
+        - Node.js Version (if applicable): 
+        - Any custom configuration: 
+    validations:
+      required: true
   - type: textarea
     id: screenshot
     attributes:
@@ -57,14 +105,26 @@ body:
     validations:
       required: false
   - type: dropdown
-    id: os
+    id: severity
     attributes:
-      label: "OS"
-      description: What is the impacted environment ?
-      multiple: true
+      label: "Severity"
+      description: How severe is this bug?
       options:
-        - Windows
-        - Linux
-        - Mac
+        - Critical - System unusable
+        - High - Major functionality broken
+        - Medium - Some functionality affected
+        - Low - Minor issue or cosmetic
     validations:
-      required: false
+      required: true
+  - type: dropdown
+    id: user_type
+    attributes:
+      label: "User Type"
+      description: What type of user experienced this bug?
+      options:
+        - Admin User
+        - Approved User
+        - Pending Approval User
+        - Unauthenticated User
+    validations:
+      required: true

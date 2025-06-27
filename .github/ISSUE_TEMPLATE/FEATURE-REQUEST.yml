@@ -1,0 +1,69 @@
+name: "✨ Feature Request"
+description: Request a new feature for Marnix 13
+title: "✨ [FEATURE] - <title>"
+labels: [
+  "enhancement"
+]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: "Feature Description"
+      description: Please provide a clear and detailed description of the feature you'd like to see
+      placeholder: Describe the feature you want to add...
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: "Problem Statement"
+      description: What problem does this feature solve? What is the motivation?
+      placeholder: This feature would help with...
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: "Proposed Solution"
+      description: How would you like this feature to work?
+      placeholder: The feature should work by...
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: "Alternatives Considered"
+      description: Have you considered any alternative solutions or features?
+      placeholder: Alternative approaches could be...
+    validations:
+      required: false
+  - type: dropdown
+    id: component
+    attributes:
+      label: "Component"
+      description: Which part of Marnix 13 does this relate to?
+      options:
+        - Authentication & User Management
+        - Service Integration (Jellyfin, Nextcloud, etc.)
+        - Admin Dashboard
+        - User Dashboard
+        - Onboarding & UX
+        - Mobile Client Setup
+        - API & Backend
+        - UI/UX Design
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: priority
+    attributes:
+      label: "Priority"
+      description: How important is this feature to you?
+      options:
+        - Low - Nice to have
+        - Medium - Would improve experience
+        - High - Important for functionality
+        - Critical - Blocking current workflow
+    validations:
+      required: true

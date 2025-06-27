@@ -1,11 +1,11 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Documentation
-    url: https://makerkit.dev/docs
-    about: For documentation and tutorials.
-  - name: Discord
-    url: https://discord.gg/3hBn3nhbgD
-    about: For chatting with the community and getting help.
-  - name: Administrative Requests (licenses, etc.)
-    url: https://makerkit.dev/contact
-    about: Please report administrative requests here.
+  - name: Project Documentation
+    url: https://github.com/pashioya/marnix13#readme
+    about: For project documentation and setup instructions.
+  - name: Security Issues
+    url: https://github.com/pashioya/marnix13/security/advisories/new
+    about: Please report security vulnerabilities privately here.
+  - name: Discussions
+    url: https://github.com/pashioya/marnix13/discussions
+    about: For general questions, ideas, and community discussions.
