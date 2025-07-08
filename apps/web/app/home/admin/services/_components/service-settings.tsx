@@ -1,11 +1,24 @@
 'use client';
 
 import { useState } from 'react';
-import { CheckCircle, XCircle, AlertCircle, Settings, ExternalLink } from 'lucide-react';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@kit/ui/card';
-import { Button } from '@kit/ui/button';
+import {
+  AlertCircle,
+  CheckCircle,
+  ExternalLink,
+  Settings,
+  XCircle,
+} from 'lucide-react';
+
 import { Badge } from '@kit/ui/badge';
+import { Button } from '@kit/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@kit/ui/card';
 import { Input } from '@kit/ui/input';
 import { Label } from '@kit/ui/label';
 import { Switch } from '@kit/ui/switch';
@@ -77,31 +90,37 @@ export function ServiceSettings() {
   const [services, setServices] = useState<ServiceConfig[]>(mockServices);
 
   const handleToggleService = (serviceId: string) => {
-    setServices(services.map(service =>
-      service.id === serviceId 
-        ? { ...service, enabled: !service.enabled }
-        : service
-    ));
+    setServices(prev=>
+      prev.map((service) =>
+        service.id === serviceId
+          ? { ...service, enabled: !service.enabled }
+          : service,
+      ),
+    );
   };
 
   const handleToggleAutoProvision = (serviceId: string) => {
-    setServices(services.map(service =>
-      service.id === serviceId 
-        ? { ...service, autoProvision: !service.autoProvision }
-        : service
-    ));
+    setServices(prev=>
+      prev.map((service) =>
+        service.id === serviceId
+          ? { ...service, autoProvision: !service.autoProvision }
+          : service,
+      ),
+    );
   };
 
   const handleTestConnection = async (serviceId: string) => {
     // TODO: Implement actual service connectivity test
     console.log(`Testing connection to ${serviceId}`);
-    
+
     // Mock the test
-    setServices(services.map(service =>
-      service.id === serviceId 
-        ? { ...service, status: 'online' as const }
-        : service
-    ));
+    setServices(prev=>
+      prev.map((service) =>
+        service.id === serviceId
+          ? { ...service, status: 'online' as const }
+          : service,
+      ),
+    );
   };
 
   const getStatusIcon = (status: ServiceConfig['status']) => {
@@ -126,7 +145,7 @@ export function ServiceSettings() {
     }
   };
 
-  const onlineServices = services.filter(s => s.status === 'online').length;
+  const onlineServices = services.filter((s) => s.status === 'online').length;
   const totalServices = services.length;
 
   return (
@@ -135,35 +154,41 @@ export function ServiceSettings() {
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Services Status</CardTitle>
-            <Settings className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">
+              Services Status
+            </CardTitle>
+            <Settings className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{onlineServices}/{totalServices}</div>
-            <p className="text-xs text-muted-foreground">
-              Services online
-            </p>
+            <div className="text-2xl font-bold">
+              {onlineServices}/{totalServices}
+            </div>
+            <p className="text-muted-foreground text-xs">Services online</p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Auto Provisioning</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Auto Provisioning
+            </CardTitle>
             <CheckCircle className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {services.filter(s => s.autoProvision).length}
+              {services.filter((s) => s.autoProvision).length}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               Services with auto user creation
             </p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Integration Health</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Integration Health
+            </CardTitle>
             {onlineServices === totalServices ? (
               <CheckCircle className="h-4 w-4 text-green-600" />
             ) : (
@@ -174,7 +199,7 @@ export function ServiceSettings() {
             <div className="text-2xl font-bold">
               {onlineServices === totalServices ? 'Healthy' : 'Issues'}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               Overall system status
             </p>
           </CardContent>
@@ -184,7 +209,7 @@ export function ServiceSettings() {
       {/* Service Configuration */}
       <div className="space-y-4">
         <h2 className="text-xl font-semibold">Service Configuration</h2>
-        
+
         {services.map((service) => (
           <Card key={service.id}>
             <CardHeader>
@@ -203,13 +228,13 @@ export function ServiceSettings() {
                     size="sm"
                     onClick={() => window.open(service.url, '_blank')}
                   >
-                    <ExternalLink className="h-4 w-4 mr-1" />
+                    <ExternalLink className="mr-1 h-4 w-4" />
                     Open
                   </Button>
                 </div>
               </div>
             </CardHeader>
-            
+
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
@@ -221,7 +246,7 @@ export function ServiceSettings() {
                     readOnly
                   />
                 </div>
-                
+
                 {service.apiKey && (
                   <div className="space-y-2">
                     <Label htmlFor={`${service.id}-api-key`}>API Key</Label>
@@ -234,7 +259,7 @@ export function ServiceSettings() {
                   </div>
                 )}
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
@@ -243,15 +268,19 @@ export function ServiceSettings() {
                       checked={service.enabled}
                       onCheckedChange={() => handleToggleService(service.id)}
                     />
-                    <Label htmlFor={`${service.id}-enabled`}>Enable Service</Label>
+                    <Label htmlFor={`${service.id}-enabled`}>
+                      Enable Service
+                    </Label>
                   </div>
-                  
+
                   {['jellyfin', 'nextcloud'].includes(service.id) && (
                     <div className="flex items-center space-x-2">
                       <Switch
                         id={`${service.id}-auto-provision`}
                         checked={service.autoProvision}
-                        onCheckedChange={() => handleToggleAutoProvision(service.id)}
+                        onCheckedChange={() =>
+                          handleToggleAutoProvision(service.id)
+                        }
                       />
                       <Label htmlFor={`${service.id}-auto-provision`}>
                         Auto-provision user accounts
@@ -259,7 +288,7 @@ export function ServiceSettings() {
                     </div>
                   )}
                 </div>
-                
+
                 <Button
                   variant="outline"
                   onClick={() => handleTestConnection(service.id)}

@@ -43,6 +43,7 @@ import {
 import { Trans } from '@kit/ui/trans';
 
 import { refreshAuthSession } from '../../server/server-actions';
+import Image from 'next/image';
 
 export function MultiFactorAuthSetupDialog(props: { userId: string }) {
   const { t } = useTranslation();
@@ -409,7 +410,7 @@ function FactorNameForm(
 
 function QrImage({ src }: { src: string }) {
   return (
-    <img
+    <Image
       alt={'QR Code'}
       src={src}
       width={160}
