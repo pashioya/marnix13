@@ -2,6 +2,8 @@
 
 import { useCallback, useState } from 'react';
 
+import Image from 'next/image';
+
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -43,7 +45,6 @@ import {
 import { Trans } from '@kit/ui/trans';
 
 import { refreshAuthSession } from '../../server/server-actions';
-import Image from 'next/image';
 
 export function MultiFactorAuthSetupDialog(props: { userId: string }) {
   const { t } = useTranslation();

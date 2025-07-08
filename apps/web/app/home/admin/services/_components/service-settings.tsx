@@ -90,7 +90,7 @@ export function ServiceSettings() {
   const [services, setServices] = useState<ServiceConfig[]>(mockServices);
 
   const handleToggleService = (serviceId: string) => {
-    setServices(prev=>
+    setServices((prev) =>
       prev.map((service) =>
         service.id === serviceId
           ? { ...service, enabled: !service.enabled }
@@ -100,7 +100,7 @@ export function ServiceSettings() {
   };
 
   const handleToggleAutoProvision = (serviceId: string) => {
-    setServices(prev=>
+    setServices((prev) =>
       prev.map((service) =>
         service.id === serviceId
           ? { ...service, autoProvision: !service.autoProvision }
@@ -114,7 +114,7 @@ export function ServiceSettings() {
     console.log(`Testing connection to ${serviceId}`);
 
     // Mock the test
-    setServices(prev=>
+    setServices((prev) =>
       prev.map((service) =>
         service.id === serviceId
           ? { ...service, status: 'online' as const }

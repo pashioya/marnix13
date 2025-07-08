@@ -60,8 +60,8 @@ export function UserManagement() {
 
   const handleApproveUser = async (userId: string) => {
     // TODO: Implement actual approval logic with Supabase and service provisioning
-    setUsers(prev =>
-      prev.map(user =>
+    setUsers((prev) =>
+      prev.map((user) =>
         user.id === userId ? { ...user, status: 'approved' as const } : user,
       ),
     );
@@ -79,7 +79,7 @@ export function UserManagement() {
 
   const handleRejectUser = async (userId: string) => {
     // TODO: Implement actual rejection logic
-    setUsers(prev =>
+    setUsers((prev) =>
       prev.map((user) =>
         user.id === userId ? { ...user, status: 'rejected' as const } : user,
       ),
