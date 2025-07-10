@@ -13,7 +13,9 @@
     "./personal-account-settings": "./src/components/account-settings-container.tsx",
     "./components": "./src/components/index.ts",
     "./hooks/*": "./src/hooks/*.ts",
-    "./api": "./src/server/api.ts"
+    "./api": "./src/server/api.ts",
+    "./user-approval": "./src/user-approval.ts",
+    "./email-notification": "./src/email-notification.ts"
   },
   "dependencies": {
     "nanoid": "^5.1.5"
@@ -47,6 +49,12 @@
     "*": {
       "*": [
         "src/*"
+      ],
+      "user-approval": [
+        "src/user-approval.ts"
+      ],
+      "email-notification": [
+        "src/email-notification.ts"
       ]
     }
   }

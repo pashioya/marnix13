@@ -36,6 +36,10 @@ export type Database = {
     Tables: {
       accounts: {
         Row: {
+          account_type: Database['public']['Enums']['account_type'];
+          approval_status: string | null;
+          approved_at: string | null;
+          approved_by: string | null;
           created_at: string | null;
           created_by: string | null;
           email: string | null;
@@ -43,10 +47,17 @@ export type Database = {
           name: string;
           picture_url: string | null;
           public_data: Json;
+          rejected_at: string | null;
+          rejected_by: string | null;
+          rejection_reason: string | null;
           updated_at: string | null;
           updated_by: string | null;
         };
         Insert: {
+          account_type?: Database['public']['Enums']['account_type'];
+          approval_status?: string | null;
+          approved_at?: string | null;
+          approved_by?: string | null;
           created_at?: string | null;
           created_by?: string | null;
           email?: string | null;
@@ -54,10 +65,17 @@ export type Database = {
           name: string;
           picture_url?: string | null;
           public_data?: Json;
+          rejected_at?: string | null;
+          rejected_by?: string | null;
+          rejection_reason?: string | null;
           updated_at?: string | null;
           updated_by?: string | null;
         };
         Update: {
+          account_type?: Database['public']['Enums']['account_type'];
+          approval_status?: string | null;
+          approved_at?: string | null;
+          approved_by?: string | null;
           created_at?: string | null;
           created_by?: string | null;
           email?: string | null;
@@ -65,6 +83,9 @@ export type Database = {
           name?: string;
           picture_url?: string | null;
           public_data?: Json;
+          rejected_at?: string | null;
+          rejected_by?: string | null;
+          rejection_reason?: string | null;
           updated_at?: string | null;
           updated_by?: string | null;
         };
@@ -176,10 +197,67 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      approve_account: {
+        Args: { account_id: string; admin_user_id: string };
+        Returns: undefined;
+      };
+      dev_promote_user_to_admin: {
+        Args: { user_email: string };
+        Returns: undefined;
+      };
+      get_approval_statistics: {
+        Args: Record<PropertyKey, never>;
+        Returns: Json;
+      };
+      get_approved_users: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          id: string;
+          name: string;
+          email: string;
+          requested_at: string;
+          approval_status: string;
+          approved_at: string;
+          approved_by: string;
+          picture_url: string;
+          email_confirmed_at: string;
+          last_sign_in_at: string;
+          approved_by_email: string;
+          account_type: string;
+        }[];
+      };
+      get_pending_users: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          id: string;
+          name: string;
+          email: string;
+          requested_at: string;
+          approval_status: string;
+          picture_url: string;
+          email_confirmed_at: string;
+          last_sign_in_at: string;
+        }[];
+      };
+      get_user_approval_status: {
+        Args: { user_id: string };
+        Returns: Json;
+      };
+      is_admin: {
+        Args: { user_id?: string };
+        Returns: boolean;
+      };
+      promote_to_admin: {
+        Args: { target_user_id: string };
+        Returns: undefined;
+      };
+      reject_account: {
+        Args: { account_id: string; admin_user_id: string; reason?: string };
+        Returns: undefined;
+      };
     };
     Enums: {
-      [_ in never]: never;
+      account_type: 'user' | 'admin' | 'moderator';
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -713,7 +791,9 @@ export const Constants = {
     Enums: {},
   },
   public: {
-    Enums: {},
+    Enums: {
+      account_type: ['user', 'admin', 'moderator'],
+    },
   },
   storage: {
     Enums: {},

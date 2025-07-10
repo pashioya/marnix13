@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Check, Clock, User, X } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { Badge } from '@kit/ui/badge';
 import { Button } from '@kit/ui/button';
@@ -13,6 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@kit/ui/card';
+import { LoadingOverlay } from '@kit/ui/loading-overlay';
 import {
   Table,
   TableBody,
@@ -22,74 +24,138 @@ import {
   TableRow,
 } from '@kit/ui/table';
 
+import {
+  approveUserAction,
+  getApprovalStatisticsAction,
+  getApprovedUsersAction,
+  getPendingUsersAction,
+} from '../_actions/user-approval.actions';
+import { RejectUserDialog } from './reject-user-dialog';
+
+// Types matching the database schema
 interface PendingUser {
   id: string;
-  email: string;
   name: string;
-  requestedAt: string;
-  status: 'pending' | 'approved' | 'rejected';
+  email: string;
+  requested_at: string;
+  approval_status: 'pending';
+  picture_url: string | null;
+  email_confirmed_at: string | null;
+  last_sign_in_at: string | null;
 }
 
-// Mock data - replace with actual data from Supabase
-const mockPendingUsers: PendingUser[] = [
-  {
-    id: '1',
-    email: 'john.doe@example.com',
-    name: 'John Doe',
-    requestedAt: '2024-01-15T10:30:00Z',
-    status: 'pending',
-  },
-  {
-    id: '2',
-    email: 'jane.smith@example.com',
-    name: 'Jane Smith',
-    requestedAt: '2024-01-14T15:45:00Z',
-    status: 'pending',
-  },
-  {
-    id: '3',
-    email: 'bob.wilson@example.com',
-    name: 'Bob Wilson',
-    requestedAt: '2024-01-12T09:15:00Z',
-    status: 'approved',
-  },
-];
+interface ApprovedUser {
+  id: string;
+  name: string;
+  email: string;
+  requested_at: string;
+  approval_status: 'approved';
+  approved_at: string;
+  approved_by: string;
+  picture_url: string | null;
+  email_confirmed_at: string | null;
+  last_sign_in_at: string | null;
+  approved_by_email: string | null;
+}
+
+interface ApprovalStatistics {
+  pending: number;
+  approved: number;
+  rejected: number;
+  total: number;
+}
 
 export function UserManagement() {
-  const [users, setUsers] = useState<PendingUser[]>(mockPendingUsers);
+  const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([]);
+  const [approvedUsers, setApprovedUsers] = useState<ApprovedUser[]>([]);
+  const [statistics, setStatistics] = useState<ApprovalStatistics>({
+    pending: 0,
+    approved: 0,
+    rejected: 0,
+    total: 0,
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [processingUsers, setProcessingUsers] = useState<Set<string>>(
+    new Set(),
+  );
+  const [rejectUser, setRejectUser] = useState<PendingUser | null>(null);
+
+  // Load data on component mount
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    setIsLoading(true);
+    try {
+      const emptyFormData = new FormData();
+
+      const [pendingResult, approvedResult, statsResult] = await Promise.all([
+        getPendingUsersAction(emptyFormData),
+        getApprovedUsersAction(emptyFormData),
+        getApprovalStatisticsAction(emptyFormData),
+      ]);
+
+      if (pendingResult.success && pendingResult.data) {
+        setPendingUsers(pendingResult.data);
+      }
+
+      if (approvedResult.success && approvedResult.data) {
+        setApprovedUsers(approvedResult.data);
+      }
+
+      if (statsResult.success && statsResult.data) {
+        setStatistics(statsResult.data);
+      }
+    } catch (error) {
+      console.error('Failed to load user data:', error);
+      toast.error('Failed to load user data');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleApproveUser = async (userId: string) => {
-    // TODO: Implement actual approval logic with Supabase and service provisioning
-    setUsers((prev) =>
-      prev.map((user) =>
-        user.id === userId ? { ...user, status: 'approved' as const } : user,
-      ),
-    );
+    setProcessingUsers((prev) => new Set(prev).add(userId));
+    try {
+      const formData = new FormData();
+      formData.append('userId', userId);
 
-    // This would trigger:
-    // 1. Update user status in Supabase
-    // 2. Create Jellyfin account via API
-    // 3. Create Nextcloud account via API
-    // 4. Send welcome email
+      await approveUserAction(formData);
 
-    console.log(
-      `Approving user ${userId} - would provision accounts in Jellyfin and Nextcloud`,
-    );
+      toast.success('User approved successfully');
+
+      // Reload data to get updated state
+      await loadData();
+    } catch (error) {
+      console.error('Failed to approve user:', error);
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to approve user',
+      );
+    } finally {
+      setProcessingUsers((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(userId);
+        return newSet;
+      });
+    }
   };
 
-  const handleRejectUser = async (userId: string) => {
-    // TODO: Implement actual rejection logic
-    setUsers((prev) =>
-      prev.map((user) =>
-        user.id === userId ? { ...user, status: 'rejected' as const } : user,
-      ),
-    );
-
-    console.log(`Rejecting user ${userId}`);
+  const handleRejectUser = (user: PendingUser) => {
+    setRejectUser(user);
   };
 
-  const pendingUsers = users.filter((user) => user.status === 'pending');
-  const approvedUsers = users.filter((user) => user.status === 'approved');
+  const handleRejectDialogClose = () => {
+    setRejectUser(null);
+    // Reload data when dialog closes (rejection completed)
+    loadData().catch((error) => {
+      console.error('Failed to reload data after dialog close:', error);
+    });
+  };
+
+  if (isLoading) {
+    return <LoadingOverlay fullPage={false} />;
+  }
 
   return (
     <div className="space-y-6">
@@ -103,7 +169,7 @@ export function UserManagement() {
             <Clock className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{pendingUsers.length}</div>
+            <div className="text-2xl font-bold">{statistics.pending}</div>
             <p className="text-muted-foreground text-xs">Awaiting approval</p>
           </CardContent>
         </Card>
@@ -114,7 +180,7 @@ export function UserManagement() {
             <User className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{approvedUsers.length}</div>
+            <div className="text-2xl font-bold">{statistics.approved}</div>
             <p className="text-muted-foreground text-xs">
               With access to services
             </p>
@@ -164,7 +230,7 @@ export function UserManagement() {
                     <TableCell className="font-medium">{user.name}</TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>
-                      {new Date(user.requestedAt).toLocaleDateString()}
+                      {new Date(user.requested_at).toLocaleDateString()}
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline">
@@ -177,14 +243,18 @@ export function UserManagement() {
                         size="sm"
                         onClick={() => handleApproveUser(user.id)}
                         className="bg-green-600 hover:bg-green-700"
+                        disabled={processingUsers.has(user.id)}
                       >
                         <Check className="mr-1 h-4 w-4" />
-                        Approve
+                        {processingUsers.has(user.id)
+                          ? 'Processing...'
+                          : 'Approve'}
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => handleRejectUser(user.id)}
+                        onClick={() => handleRejectUser(user)}
+                        disabled={processingUsers.has(user.id)}
                       >
                         <X className="mr-1 h-4 w-4" />
                         Reject
@@ -224,7 +294,7 @@ export function UserManagement() {
                     <TableCell className="font-medium">{user.name}</TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>
-                      {new Date(user.requestedAt).toLocaleDateString()}
+                      {new Date(user.approved_at).toLocaleDateString()}
                     </TableCell>
                     <TableCell>
                       <Badge className="bg-green-100 text-green-800">
@@ -253,6 +323,15 @@ export function UserManagement() {
           )}
         </CardContent>
       </Card>
+
+      {/* Reject User Dialog */}
+      {rejectUser && (
+        <RejectUserDialog
+          isOpen={!!rejectUser}
+          onClose={handleRejectDialogClose}
+          user={rejectUser}
+        />
+      )}
     </div>
   );
 }

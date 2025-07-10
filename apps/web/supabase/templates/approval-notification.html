@@ -1,0 +1,117 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
+<html dir="ltr" lang="en">
+<head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+    <meta name="x-apple-disable-message-reformatting"/>
+    <style>
+        body {
+            background-color: #fff;
+            margin: auto;
+            font-family: sans-serif;
+            color: #484848;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+        .content {
+            background-color: #ffffff;
+            padding: 30px;
+            border: 1px solid #e9ecef;
+            border-radius: 0 0 8px 8px;
+        }
+        .success {
+            color: #28a745;
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #007bff;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .services-list {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        .services-list ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .services-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .services-list li:last-child {
+            border-bottom: none;
+        }
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Welcome to Marnix 13!</h1>
+        </div>
+        <div class="content">
+            <div class="success">
+                <h2>🎉 Your account has been approved!</h2>
+            </div>
+            
+            <p>Dear {{ .Name }},</p>
+            
+            <p>Great news! Your account request for Marnix 13 has been approved by our administrator. You now have access to all our self-hosted services.</p>
+            
+            <p>Your account has been automatically set up with access to:</p>
+            
+            <div class="services-list">
+                <ul>
+                    <li><strong>Jellyfin</strong> - Your personal media server for movies, TV shows, and music</li>
+                    <li><strong>Nextcloud</strong> - Your private cloud storage and collaboration platform</li>
+                    <li><strong>Radarr</strong> - Movie collection management</li>
+                    <li><strong>Sonarr</strong> - TV series collection management</li>
+                    <li><strong>Manga Reader</strong> - Your personal manga library</li>
+                </ul>
+            </div>
+            
+            <p>You can now sign in to your account and access the unified dashboard:</p>
+            
+            <a href="{{ .SiteURL }}" class="button">Access Your Dashboard</a>
+            
+            <p>If you have any questions or need assistance getting started, please don't hesitate to reach out to our support team.</p>
+            
+            <p>Welcome to the Marnix 13 community!</p>
+            
+            <p>Best regards,<br>
+            The Marnix 13 Team</p>
+        </div>
+        
+        <div class="footer">
+            <p>This is an automated message from Marnix 13. Please do not reply to this email.</p>
+        </div>
+    </div>
+</body>
+</html>

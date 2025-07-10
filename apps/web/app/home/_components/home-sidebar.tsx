@@ -11,12 +11,24 @@ import {
 import { AppLogo } from '~/components/app-logo';
 import { ProfileAccountDropdownContainer } from '~/components/personal-account-dropdown-container';
 import { navigationConfig } from '~/config/navigation.config';
+import { getCurrentUserAdminStatus } from '~/lib/auth/get-current-user-account';
 import { Tables } from '~/lib/database.types';
+import { filterAdminRoutes } from '~/lib/navigation/filter-admin-routes';
 
-export function HomeSidebar(props: {
+export async function HomeSidebar(props: {
   account?: Tables<'accounts'>;
   user: User;
 }) {
+  // Check if the current user is an admin
+  const isAdmin = await getCurrentUserAdminStatus();
+
+  // Filter navigation routes based on admin status
+  const filteredRoutes = filterAdminRoutes(navigationConfig.routes, isAdmin);
+  const filteredConfig = {
+    ...navigationConfig,
+    routes: filteredRoutes,
+  };
+
   return (
     <Sidebar collapsible={'icon'}>
       <SidebarHeader className={'h-16 justify-center'}>
@@ -28,7 +40,7 @@ export function HomeSidebar(props: {
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarNavigation config={navigationConfig} />
+        <SidebarNavigation config={filteredConfig} />
       </SidebarContent>
 
       <SidebarFooter>

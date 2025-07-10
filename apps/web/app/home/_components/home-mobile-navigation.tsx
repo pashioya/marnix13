@@ -1,10 +1,13 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+
 import Link from 'next/link';
 
 import { LogOut, Menu } from 'lucide-react';
 
 import { useSignOut } from '@kit/supabase/hooks/use-sign-out';
+import { useSupabase } from '@kit/supabase/hooks/use-supabase';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +19,7 @@ import {
 import { Trans } from '@kit/ui/trans';
 
 import { navigationConfig } from '~/config/navigation.config';
+import { filterAdminRoutes } from '~/lib/navigation/filter-admin-routes';
 
 /**
  * Mobile navigation for the home page
@@ -23,8 +27,51 @@ import { navigationConfig } from '~/config/navigation.config';
  */
 export function HomeMobileNavigation() {
   const signOut = useSignOut();
+  const client = useSupabase();
+  const [_isAdmin, setIsAdmin] = useState(false);
+  const [filteredConfig, setFilteredConfig] = useState(navigationConfig);
 
-  const Links = navigationConfig.routes.map((item, index) => {
+  useEffect(() => {
+    async function checkAdminStatus() {
+      try {
+        const {
+          data: { user },
+          error: userError,
+        } = await client.auth.getUser();
+
+        if (userError || !user) {
+          setIsAdmin(false);
+          return;
+        }
+
+        const { data: account, error: _accountError } = await client
+          .from('accounts')
+          .select('account_type')
+          .eq('id', user.id)
+          .single();
+
+        const adminStatus = account?.account_type === 'admin';
+        setIsAdmin(adminStatus);
+
+        // Filter navigation routes based on admin status
+        const filteredRoutes = filterAdminRoutes(
+          navigationConfig.routes,
+          adminStatus,
+        );
+        setFilteredConfig({
+          ...navigationConfig,
+          routes: filteredRoutes,
+        });
+      } catch (error) {
+        console.error('Error checking admin status:', error);
+        setIsAdmin(false);
+      }
+    }
+
+    checkAdminStatus();
+  }, [client]);
+
+  const Links = filteredConfig.routes.map((item, index) => {
     if ('children' in item) {
       return item.children.map((child) => {
         return (
