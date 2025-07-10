@@ -10,6 +10,7 @@ import {
 } from '@kit/accounts/user-approval';
 import { enhanceAction } from '@kit/next/actions';
 import { getSupabaseServerAdminClient } from '@kit/supabase/server-admin-client';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
 
 import appConfig from '~/config/app.config';
 
@@ -32,62 +33,128 @@ async function fetchUserAccountData(
 /**
  * Server action to get pending users
  */
-export async function getPendingUsersAction() {
-  const ctx = { name: 'getPendingUsersAction' };
+export const getPendingUsersAction = enhanceAction(
+  async (formData: FormData, user) => {
+    const ctx = { name: 'getPendingUsersAction', userId: user.id };
 
-  try {
-    const adminClient = getSupabaseServerAdminClient();
-    const approvalService = createUserApprovalService(adminClient);
+    try {
+      // Check if the current user is an admin using regular client
+      const userClient = getSupabaseServerClient();
+      const { data: userAccount, error: userError } = await userClient
+        .from('accounts')
+        .select('account_type')
+        .eq('id', user.id)
+        .single();
 
-    const pendingUsers = await approvalService.getPendingUsers();
+      if (userError || !userAccount) {
+        console.error(ctx, 'Failed to get user account:', userError);
+        throw new Error('Failed to verify user permissions');
+      }
 
-    console.log(ctx, `Retrieved ${pendingUsers.length} pending users`);
-    return { success: true, data: pendingUsers };
-  } catch (error) {
-    console.error(ctx, 'Failed to get pending users:', error);
-    return { success: false, error: 'Failed to fetch pending users' };
-  }
-}
+      if (userAccount.account_type !== 'admin') {
+        console.error(ctx, 'User is not an admin:', userAccount.account_type);
+        throw new Error('Access denied: Admin privileges required');
+      }
+
+      // User is verified as admin, now use admin client to get data
+      const adminClient = getSupabaseServerAdminClient();
+      const approvalService = createUserApprovalService(adminClient);
+
+      const pendingUsers = await approvalService.getPendingUsers();
+
+      console.log(ctx, `Retrieved ${pendingUsers.length} pending users`);
+      return { success: true, data: pendingUsers };
+    } catch (error) {
+      console.error(ctx, 'Failed to get pending users:', error);
+      throw error;
+    }
+  },
+  {},
+);
 
 /**
  * Server action to get approved users
  */
-export async function getApprovedUsersAction() {
-  const ctx = { name: 'getApprovedUsersAction' };
+export const getApprovedUsersAction = enhanceAction(
+  async (formData: FormData, user) => {
+    const ctx = { name: 'getApprovedUsersAction', userId: user.id };
 
-  try {
-    const adminClient = getSupabaseServerAdminClient();
-    const approvalService = createUserApprovalService(adminClient);
+    try {
+      // Check if the current user is an admin using regular client
+      const userClient = getSupabaseServerClient();
+      const { data: userAccount, error: userError } = await userClient
+        .from('accounts')
+        .select('account_type')
+        .eq('id', user.id)
+        .single();
 
-    const approvedUsers = await approvalService.getApprovedUsers();
+      if (userError || !userAccount) {
+        console.error(ctx, 'Failed to get user account:', userError);
+        throw new Error('Failed to verify user permissions');
+      }
 
-    console.log(ctx, `Retrieved ${approvedUsers.length} approved users`);
-    return { success: true, data: approvedUsers };
-  } catch (error) {
-    console.error(ctx, 'Failed to get approved users:', error);
-    return { success: false, error: 'Failed to fetch approved users' };
-  }
-}
+      if (userAccount.account_type !== 'admin') {
+        console.error(ctx, 'User is not an admin:', userAccount.account_type);
+        throw new Error('Access denied: Admin privileges required');
+      }
+
+      // User is verified as admin, now use admin client to get data
+      const adminClient = getSupabaseServerAdminClient();
+      const approvalService = createUserApprovalService(adminClient);
+
+      const approvedUsers = await approvalService.getApprovedUsers();
+
+      console.log(ctx, `Retrieved ${approvedUsers.length} approved users`);
+      return { success: true, data: approvedUsers };
+    } catch (error) {
+      console.error(ctx, 'Failed to get approved users:', error);
+      throw error;
+    }
+  },
+  {},
+);
 
 /**
  * Server action to get approval statistics
  */
-export async function getApprovalStatisticsAction() {
-  const ctx = { name: 'getApprovalStatisticsAction' };
+export const getApprovalStatisticsAction = enhanceAction(
+  async (formData: FormData, user) => {
+    const ctx = { name: 'getApprovalStatisticsAction', userId: user.id };
 
-  try {
-    const adminClient = getSupabaseServerAdminClient();
-    const approvalService = createUserApprovalService(adminClient);
+    try {
+      // Check if the current user is an admin using regular client
+      const userClient = getSupabaseServerClient();
+      const { data: userAccount, error: userError } = await userClient
+        .from('accounts')
+        .select('account_type')
+        .eq('id', user.id)
+        .single();
 
-    const statistics = await approvalService.getApprovalStatistics();
+      if (userError || !userAccount) {
+        console.error(ctx, 'Failed to get user account:', userError);
+        throw new Error('Failed to verify user permissions');
+      }
 
-    console.log(ctx, 'Retrieved approval statistics', statistics);
-    return { success: true, data: statistics };
-  } catch (error) {
-    console.error(ctx, 'Failed to get approval statistics:', error);
-    return { success: false, error: 'Failed to fetch statistics' };
-  }
-}
+      if (userAccount.account_type !== 'admin') {
+        console.error(ctx, 'User is not an admin:', userAccount.account_type);
+        throw new Error('Access denied: Admin privileges required');
+      }
+
+      // User is verified as admin, now use admin client to get data
+      const adminClient = getSupabaseServerAdminClient();
+      const approvalService = createUserApprovalService(adminClient);
+
+      const statistics = await approvalService.getApprovalStatistics();
+
+      console.log(ctx, 'Retrieved approval statistics', statistics);
+      return { success: true, data: statistics };
+    } catch (error) {
+      console.error(ctx, 'Failed to get approval statistics:', error);
+      throw error;
+    }
+  },
+  {},
+);
 
 /**
  * Server action to approve a user

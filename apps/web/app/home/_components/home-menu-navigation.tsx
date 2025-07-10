@@ -6,9 +6,17 @@ import {
 import { AppLogo } from '~/components/app-logo';
 import { ProfileAccountDropdownContainer } from '~/components/personal-account-dropdown-container';
 import { navigationConfig } from '~/config/navigation.config';
+import { getCurrentUserAdminStatus } from '~/lib/auth/get-current-user-account';
+import { filterAdminRoutes } from '~/lib/navigation/filter-admin-routes';
 
-export function HomeMenuNavigation() {
-  const routes = navigationConfig.routes.reduce<
+export async function HomeMenuNavigation() {
+  // Check if the current user is an admin
+  const isAdmin = await getCurrentUserAdminStatus();
+
+  // Filter navigation routes based on admin status
+  const filteredRoutes = filterAdminRoutes(navigationConfig.routes, isAdmin);
+
+  const routes = filteredRoutes.reduce<
     Array<{
       path: string;
       label: string;

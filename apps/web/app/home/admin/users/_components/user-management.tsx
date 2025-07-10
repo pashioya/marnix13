@@ -88,10 +88,12 @@ export function UserManagement() {
   const loadData = async () => {
     setIsLoading(true);
     try {
+      const emptyFormData = new FormData();
+
       const [pendingResult, approvedResult, statsResult] = await Promise.all([
-        getPendingUsersAction(),
-        getApprovedUsersAction(),
-        getApprovalStatisticsAction(),
+        getPendingUsersAction(emptyFormData),
+        getApprovedUsersAction(emptyFormData),
+        getApprovalStatisticsAction(emptyFormData),
       ]);
 
       if (pendingResult.success && pendingResult.data) {
@@ -146,7 +148,9 @@ export function UserManagement() {
   const handleRejectDialogClose = () => {
     setRejectUser(null);
     // Reload data when dialog closes (rejection completed)
-    loadData();
+    loadData().catch((error) => {
+      console.error('Failed to reload data after dialog close:', error);
+    });
   };
 
   if (isLoading) {
