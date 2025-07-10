@@ -11,6 +11,7 @@
     "name": "MakerKit"
   },
   "scripts": {
+    "prepare": "husky install",
     "preinstall": "pnpm run --filter scripts requirements",
     "postinstall": "manypkg fix",
     "build": "turbo build --cache-dir=.turbo",
@@ -32,6 +33,11 @@
     "supabase:web:reset": "pnpm --filter web supabase:reset"
   },
   "prettier": "@kit/prettier-config",
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,json,css,md}": [
+      "prettier --write --cache --cache-location node_modules/.cache/.prettiercache"
+    ]
+  },
   "packageManager": "pnpm@9.12.0",
   "pnpm": {
     "overrides": {
@@ -39,9 +45,13 @@
     }
   },
   "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
     "@manypkg/cli": "^0.24.0",
     "@turbo/gen": "^2.5.0",
     "cross-env": "^7.0.3",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.2",
     "prettier": "^3.5.3",
     "turbo": "2.5.0",
     "typescript": "^5.7.3"

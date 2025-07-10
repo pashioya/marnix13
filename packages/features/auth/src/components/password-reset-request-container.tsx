@@ -47,7 +47,7 @@ export function PasswordResetRequestContainer(params: {
   return (
     <>
       <If condition={success}>
-        <Alert variant={'success'}>
+        <Alert variant={'success'} data-test="password-reset-success">
           <AlertDescription>
             <Trans i18nKey={'auth:passwordResetSuccessMessage'} />
           </AlertDescription>

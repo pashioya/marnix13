@@ -9,6 +9,8 @@ test.describe('Password Reset Flow', () => {
   test.describe.configure({ mode: 'serial' });
 
   test('will reset the password and sign in with new one', async ({ page }) => {
+    // Increase timeout for this test due to email dependency
+    test.setTimeout(120000); // 2 minutes
     const email = `${emailAddress}@makerkit.dev`;
     const auth = new AuthPageObject(page);
 
@@ -29,9 +31,23 @@ test.describe('Password Reset Flow', () => {
     await page.fill('[name="email"]', email);
     await page.click('[type="submit"]');
 
-    await auth.visitConfirmEmailLink(email);
+    // Wait for the success message or confirmation that email was sent  
+    await page.waitForSelector('[role="alert"]', { timeout: 10000 });  
 
-    await page.waitForURL('/update-password');
+    // Immediately visit the confirm email link to avoid OTP expiration
+    // Add a small delay to ensure the email is sent
+    await page.waitForTimeout(1000);
+    await auth.visitConfirmEmailLink(email, { deleteAfter: false });
+
+    // Wait for redirect to update-password page, increase timeout and add more specific error handling
+    try {
+      await page.waitForURL('/update-password', { timeout: 30000 });
+    } catch (error) {
+      console.log('Current URL:', page.url());
+      console.log('Expected URL: /update-password');
+      console.log('Error:', error);
+      throw error;
+    }
 
     await auth.updatePassword(newPassword);
 
@@ -46,7 +62,7 @@ test.describe('Password Reset Flow', () => {
     await auth.signOut();
     await page.waitForURL('/');
 
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(200);
 
     await page
       .locator('a', {

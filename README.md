@@ -1,4 +1,4 @@
-# Marnix 13: Unified Home Server Portal (Makerkit Edition)
+# Marnix 13: Unified Home Server Portal
 
 ## Project Overview
 
@@ -18,7 +18,7 @@ A clean, protected homepage displaying links to all publicly exposed services (J
 
 ### Authentication & Authorization
 
-- Secure email/password authentication powered by Supabase (integrated with Makerkit).
+- Secure email/password authentication powered by Supabase
 - Role-based access control using Makerkit's built-in teams and roles system.
 - Only approved users can access core features; admin dashboard is restricted to administrators.
 
@@ -39,11 +39,10 @@ A clean, protected homepage displaying links to all publicly exposed services (J
 
 ## Tech Stack
 
-- **Frontend**: Next.js (Makerkit SaaS Starter Kit Lite)
+- **Frontend**: Next.js
 - **Authentication & Database**: Supabase (managed PostgreSQL)
-- **Backend Integrations**: Supabase Edge Functions or Next.js API routes for service provisioning
-- **UI**: Tailwind CSS, ShadCN UI (via Makerkit)
-- **Deployment**: Vercel, Netlify, or self-hosted
+- **UI**: Tailwind CSS, ShadCN UI
+- **Deployment**: self-hosted
 
 ## Getting Started
 
