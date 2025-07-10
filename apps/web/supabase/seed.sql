@@ -206,3 +206,95 @@ BEGIN
         );
     END IF;
 END $$;
+
+
+-- Add test data for user approval system
+-- This file is for testing purposes only
+
+-- Insert a test user that is pending approval
+INSERT INTO auth.users (
+  id,
+  email,
+  email_confirmed_at,
+  created_at,
+  updated_at,
+  raw_user_meta_data,
+  raw_app_meta_data,
+  is_super_admin,
+  role
+) VALUES (
+  '11111111-1111-1111-1111-111111111111',
+  'test.user@example.com',
+  now(),
+  now(),
+  now(),
+  '{"name": "Test User", "approval_status": "pending"}'::jsonb,
+  '{}'::jsonb,
+  false,
+  'authenticated'
+)
+ON CONFLICT (id) DO NOTHING;
+
+-- Insert into accounts table
+INSERT INTO public.accounts (
+  id,
+  name,
+  email,
+  picture_url,
+  created_at,
+  updated_at,
+  approval_status
+) VALUES (
+  '11111111-1111-1111-1111-111111111111',
+  'Test User',
+  'test.user@example.com',
+  null,
+  now(),
+  now(),
+  'pending'
+)
+ON CONFLICT (id) DO NOTHING;
+
+-- Insert a second test user for rejection testing
+INSERT INTO auth.users (
+  id,
+  email,
+  email_confirmed_at,
+  created_at,
+  updated_at,
+  raw_user_meta_data,
+  raw_app_meta_data,
+  is_super_admin,
+  role
+) VALUES (
+  '22222222-2222-2222-2222-222222222222',
+  'test.user2@example.com',
+  now(),
+  now(),
+  now(),
+  '{"name": "Test User 2", "approval_status": "pending"}'::jsonb,
+  '{}'::jsonb,
+  false,
+  'authenticated'
+)
+ON CONFLICT (id) DO NOTHING;
+
+-- Insert into accounts table
+INSERT INTO public.accounts (
+  id,
+  name,
+  email,
+  picture_url,
+  created_at,
+  updated_at,
+  approval_status
+) VALUES (
+  '22222222-2222-2222-2222-222222222222',
+  'Test User 2',
+  'test.user2@example.com',
+  null,
+  now(),
+  now(),
+  'pending'
+)
+ON CONFLICT (id) DO NOTHING;

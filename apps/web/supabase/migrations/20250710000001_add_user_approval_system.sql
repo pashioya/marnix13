@@ -201,7 +201,7 @@ BEGIN
         a.picture_url,
         u.email_confirmed_at,
         u.last_sign_in_at,
-        approver.email as approved_by_email
+        approver.email::text as approved_by_email
     FROM public.accounts a
     JOIN auth.users u ON a.id = u.id
     LEFT JOIN auth.users approver ON a.approved_by = approver.id
