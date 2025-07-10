@@ -48,10 +48,18 @@ BEGIN
     SELECT EXISTS(SELECT 1 FROM public.accounts WHERE email = 'admin@example.test') INTO account_exists;
     
     IF account_exists THEN
-        -- Get existing account ID
+        -- Get existing account ID and ensure it's approved
         SELECT id INTO admin_account_id FROM public.accounts WHERE email = 'admin@example.test';
+        
+        -- Update the account to ensure it's approved
+        UPDATE public.accounts 
+        SET 
+            approval_status = 'approved',
+            approved_at = COALESCE(approved_at, now()),
+            approved_by = COALESCE(approved_by, admin_user_id)
+        WHERE id = admin_account_id;
     ELSE
-        -- Create new account
+        -- Create new account with approved status
         INSERT INTO public.accounts (
             id,
             name,
@@ -59,14 +67,20 @@ BEGIN
             created_at,
             updated_at,
             created_by,
-            updated_by
+            updated_by,
+            approval_status,
+            approved_at,
+            approved_by
         ) VALUES (
-            gen_random_uuid(),
+            admin_user_id, -- Use the same ID as the auth user
             'Admin Account',
             'admin@example.test',
             now(),
             now(),
             admin_user_id,
+            admin_user_id,
+            'approved',
+            now(),
             admin_user_id
         ) RETURNING id INTO admin_account_id;
     END IF;
