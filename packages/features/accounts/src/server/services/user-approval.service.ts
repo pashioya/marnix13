@@ -2,13 +2,12 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 import { getLogger } from '@kit/shared/logger';
 
-// Types for approval system (will be updated when DB types are regenerated)
-export type ApprovalStatus = 'pending' | 'approved' | 'rejected';
+import type {
+  ApprovalActionParams,
+  ApprovalStatus,
+} from '../../schemas/user-approval.schema';
 
-export interface ApprovalActionParams {
-  userId: string;
-  reason?: string;
-}
+// Types for approval system
 
 export interface ApprovalActionResult {
   success: boolean;
@@ -99,10 +98,10 @@ export class UserApprovalService {
     adminUserId: string,
   ): Promise<ApprovalActionResult> {
     const logger = await getLogger();
-    const ctx = { 
-      name: this.namespace, 
-      userId: params.userId, 
-      adminUserId 
+    const ctx = {
+      name: this.namespace,
+      userId: params.userId,
+      adminUserId,
     };
 
     try {
@@ -141,9 +140,9 @@ export class UserApprovalService {
     adminUserId: string,
   ): Promise<ApprovalActionResult> {
     const logger = await getLogger();
-    const ctx = { 
-      name: this.namespace, 
-      userId: params.userId, 
+    const ctx = {
+      name: this.namespace,
+      userId: params.userId,
       adminUserId,
       reason: params.reason,
     };
@@ -190,9 +189,12 @@ export class UserApprovalService {
     const ctx = { name: this.namespace, userId };
 
     try {
-      const { data, error } = await this.adminClient.rpc('get_user_approval_status', {
-        user_id: userId,
-      });
+      const { data, error } = await this.adminClient.rpc(
+        'get_user_approval_status',
+        {
+          user_id: userId,
+        },
+      );
 
       if (error) {
         logger.error({ ...ctx, error }, 'Failed to fetch user approval status');
@@ -232,19 +234,23 @@ export class UserApprovalService {
     const ctx = { name: this.namespace };
 
     try {
-      const { data, error } = await this.adminClient.rpc('get_approval_statistics');
+      const { data, error } = await this.adminClient.rpc(
+        'get_approval_statistics',
+      );
 
       if (error) {
         logger.error({ ...ctx, error }, 'Failed to fetch approval statistics');
         throw new Error('Failed to fetch approval statistics');
       }
 
-      return (data as {
-        pending: number;
-        approved: number;
-        rejected: number;
-        total: number;
-      }) || { pending: 0, approved: 0, rejected: 0, total: 0 };
+      return (
+        (data as {
+          pending: number;
+          approved: number;
+          rejected: number;
+          total: number;
+        }) || { pending: 0, approved: 0, rejected: 0, total: 0 }
+      );
     } catch (error) {
       logger.error({ ...ctx, error }, 'Error fetching approval statistics');
       throw error;

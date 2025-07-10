@@ -49,6 +49,12 @@
     "*": {
       "*": [
         "src/*"
+      ],
+      "user-approval": [
+        "src/user-approval.ts"
+      ],
+      "email-notification": [
+        "src/email-notification.ts"
       ]
     }
   }

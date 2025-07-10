@@ -19,7 +19,7 @@ export interface EmailNotificationService {
 
 export function createEmailNotificationService(
   supabaseClient: SupabaseClient,
-  siteUrl: string = 'http://localhost:3000',
+  siteUrl: string = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
 ): EmailNotificationService {
   return {
     async sendApprovalNotification(user) {

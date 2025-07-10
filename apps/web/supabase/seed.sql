@@ -1,5 +1,10 @@
 -- Insert initial admin user for development
 -- Note: This should only be used in development environments
+--
+-- IMPORTANT: This seed file contains direct INSERT statements into auth.users and public.accounts
+-- that bypass Row Level Security (RLS). This file must be executed with supabase_admin privileges
+-- or in a context where RLS is disabled to avoid permission conflicts.
+-- On restored databases, ensure this is run with appropriate privileges.
 
 -- Instead of manually creating auth users, let's create a function to promote existing users to admin
 -- You can sign up normally through the app, then run this function to promote your user
@@ -46,6 +51,9 @@ GRANT EXECUTE ON FUNCTION dev_promote_user_to_admin(text) TO service_role;
 
 -- Add test data for user approval system
 -- This file is for testing purposes only
+
+-- Temporarily disable RLS for seeding operations
+SET session_replication_role = replica;
 
 -- Insert a test user that is pending approval
 INSERT INTO auth.users (
@@ -134,3 +142,6 @@ INSERT INTO public.accounts (
   'pending'
 )
 ON CONFLICT (id) DO NOTHING;
+
+-- Restore default RLS behavior
+SET session_replication_role = DEFAULT;

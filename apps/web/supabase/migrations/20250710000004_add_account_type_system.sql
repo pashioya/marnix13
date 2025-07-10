@@ -44,7 +44,7 @@ BEGIN
     -- Check if the calling user is an admin or if this is being called with service role
     IF NOT (
         public.is_admin(auth.uid()) OR 
-        current_setting('role') = 'service_role'
+        current_role = 'service_role'
     ) THEN
         RAISE EXCEPTION 'Access denied. Admin privileges required to promote users.';
     END IF;

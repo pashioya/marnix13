@@ -1,17 +1,15 @@
 // Export types
 export type {
-  ApprovalStatus,
-  ApprovalActionParams,
   ApprovalActionResult,
   PendingUserView,
   ApprovedUserView,
 } from './server/services/user-approval.service';
 
-// Export schemas
+// Export schemas and types from schema
 export * from './schemas/user-approval.schema';
 
 // Export service
-export { 
+export {
   UserApprovalService,
   createUserApprovalService,
 } from './server/services/user-approval.service';

@@ -1,6 +1,6 @@
 import type { Database } from '@kit/supabase/database';
 
-export type ApprovalStatus = 'pending' | 'approved' | 'rejected';
+import type { ApprovalStatus } from '../schemas/user-approval.schema';
 
 export interface UserApprovalData {
   id: string;
@@ -34,11 +34,6 @@ export interface RejectedUser extends UserApprovalData {
   rejectedAt: string;
   rejectedBy: string;
   rejectionReason?: string;
-}
-
-export interface ApprovalActionParams {
-  userId: string;
-  reason?: string;
 }
 
 export interface ApprovalActionResult {

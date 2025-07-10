@@ -127,7 +127,9 @@ export function UserManagement() {
       await loadData();
     } catch (error) {
       console.error('Failed to approve user:', error);
-      toast.error('Failed to approve user');
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to approve user',
+      );
     } finally {
       setProcessingUsers((prev) => {
         const newSet = new Set(prev);

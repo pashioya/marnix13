@@ -11,6 +11,24 @@ import {
 import { enhanceAction } from '@kit/next/actions';
 import { getSupabaseServerAdminClient } from '@kit/supabase/server-admin-client';
 
+import appConfig from '~/config/app.config';
+
+/**
+ * Helper function to fetch user account data
+ */
+async function fetchUserAccountData(
+  adminClient: Parameters<typeof createUserApprovalService>[0],
+  userId: string,
+) {
+  const { data: accountData, error: accountError } = await adminClient
+    .from('accounts')
+    .select('name, email')
+    .eq('id', userId)
+    .single();
+
+  return { accountData, accountError };
+}
+
 /**
  * Server action to get pending users
  */
@@ -108,12 +126,10 @@ export const approveUserAction = enhanceAction(
 
       // Send approval notification email
       try {
-        // Get user data from accounts table
-        const { data: accountData, error: accountError } = await adminClient
-          .from('accounts')
-          .select('name, email')
-          .eq('id', userId)
-          .single();
+        const { accountData, accountError } = await fetchUserAccountData(
+          adminClient,
+          userId,
+        );
 
         if (accountError || !accountData) {
           console.error(
@@ -122,7 +138,17 @@ export const approveUserAction = enhanceAction(
             accountError,
           );
         } else {
-          const emailService = createEmailNotificationService(adminClient);
+          const emailService = createEmailNotificationService(
+            adminClient,
+            appConfig.url,
+          );
+          if (!accountData.email) {
+            console.error(
+              ctx,
+              'Cannot send notification: user email is missing',
+            );
+            return;
+          }
           await emailService.sendApprovalNotification({
             id: userId,
             name: accountData.name || 'User',
@@ -184,12 +210,10 @@ export const rejectUserAction = enhanceAction(
 
       // Send rejection notification email
       try {
-        // Get user data from accounts table
-        const { data: accountData, error: accountError } = await adminClient
-          .from('accounts')
-          .select('name, email')
-          .eq('id', userId)
-          .single();
+        const { accountData, accountError } = await fetchUserAccountData(
+          adminClient,
+          userId,
+        );
 
         if (accountError || !accountData) {
           console.error(
@@ -198,7 +222,10 @@ export const rejectUserAction = enhanceAction(
             accountError,
           );
         } else {
-          const emailService = createEmailNotificationService(adminClient);
+          const emailService = createEmailNotificationService(
+            adminClient,
+            appConfig.url,
+          );
           await emailService.sendRejectionNotification(
             {
               id: userId,
