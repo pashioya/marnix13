@@ -85,4 +85,5 @@ export interface ApprovedUserView {
   email_confirmed_at: string | null;
   last_sign_in_at: string | null;
   approved_by_email: string | null;
+  account_type: 'user' | 'admin' | 'moderator';
 }
