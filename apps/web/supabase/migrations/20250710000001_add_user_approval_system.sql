@@ -5,43 +5,44 @@
  * -------------------------------------------------------
  */
 
--- Create admin roles table first
-CREATE TABLE IF NOT EXISTS public.admin_roles (
-    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-    user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    role text NOT NULL CHECK (role IN ('admin', 'super_admin')),
-    granted_at timestamp with time zone DEFAULT NOW(),
-    granted_by uuid REFERENCES auth.users(id),
-    is_active boolean DEFAULT true,
-    UNIQUE(user_id, role)
-);
+-- Create enum for account types (if not already exists from later migration)
+DO $$ BEGIN
+    CREATE TYPE public.account_type AS ENUM ('user', 'admin', 'moderator');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
--- Add comments for admin roles table
-COMMENT ON TABLE public.admin_roles IS 'Stores admin role assignments for users';
-COMMENT ON COLUMN public.admin_roles.user_id IS 'The user who has the admin role';
-COMMENT ON COLUMN public.admin_roles.role IS 'The type of admin role (admin, super_admin)';
-COMMENT ON COLUMN public.admin_roles.granted_at IS 'When the role was granted';
-COMMENT ON COLUMN public.admin_roles.granted_by IS 'The admin who granted this role';
-COMMENT ON COLUMN public.admin_roles.is_active IS 'Whether the role is currently active';
+-- Add account_type column to accounts table (if not already exists from later migration)
+DO $$ BEGIN
+    ALTER TABLE public.accounts 
+    ADD COLUMN account_type public.account_type DEFAULT 'user' NOT NULL;
+EXCEPTION
+    WHEN duplicate_column THEN null;
+END $$;
 
--- Create indexes for efficient admin role lookups
-CREATE INDEX IF NOT EXISTS idx_admin_roles_user_id ON public.admin_roles(user_id);
-CREATE INDEX IF NOT EXISTS idx_admin_roles_active ON public.admin_roles(user_id, is_active) WHERE is_active = true;
+-- Add comment for the account_type column
+COMMENT ON COLUMN public.accounts.account_type IS 'The type/role of the account (user, admin, moderator)';
 
--- Helper function to check if a user is an admin
-CREATE OR REPLACE FUNCTION public.is_admin(user_id uuid)
+-- Create index for efficient querying of account types
+CREATE INDEX IF NOT EXISTS idx_accounts_account_type ON public.accounts(account_type);
+
+-- Helper function to check if a user is an admin using account_type
+CREATE OR REPLACE FUNCTION public.is_admin(user_id uuid DEFAULT auth.uid())
 RETURNS boolean
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = ''
 AS $$
 BEGIN
+    -- Allow service_role to act as admin (for server-side operations)
+    IF current_setting('role') = 'service_role' THEN
+        RETURN true;
+    END IF;
+    
+    -- Return true if the user has admin account type
     RETURN EXISTS (
-        SELECT 1 
-        FROM public.admin_roles 
-        WHERE user_id = is_admin.user_id 
-        AND is_active = true
-        AND role IN ('admin', 'super_admin')
+        SELECT 1 FROM public.accounts 
+        WHERE id = user_id AND account_type = 'admin'
     );
 END;
 $$;
@@ -49,119 +50,35 @@ $$;
 -- Grant execute permission on the helper function
 GRANT EXECUTE ON FUNCTION public.is_admin(uuid) TO authenticated, service_role;
 
--- Enable RLS on admin_roles table
-ALTER TABLE public.admin_roles ENABLE ROW LEVEL SECURITY;
-
--- RLS policies for admin_roles table
-CREATE POLICY admin_roles_read ON public.admin_roles FOR SELECT
-TO authenticated
-USING (
-    -- Users can read their own roles
-    user_id = auth.uid() OR
-    -- Admins can read all roles
-    public.is_admin(auth.uid())
-);
-
--- Only super admins can insert/update/delete admin roles
-CREATE POLICY admin_roles_super_admin_only ON public.admin_roles FOR ALL
-TO authenticated
-USING (
-    EXISTS (
-        SELECT 1 FROM public.admin_roles 
-        WHERE user_id = auth.uid() 
-        AND role = 'super_admin' 
-        AND is_active = true
-    )
-)
-WITH CHECK (
-    EXISTS (
-        SELECT 1 FROM public.admin_roles 
-        WHERE user_id = auth.uid() 
-        AND role = 'super_admin' 
-        AND is_active = true
-    )
-);
-
--- Function to grant admin role (only super admins can grant roles)
-CREATE OR REPLACE FUNCTION public.grant_admin_role(
-    target_user_id uuid,
-    role_type text DEFAULT 'admin'
-) RETURNS void
+-- Create function to promote a user to admin (can only be called by existing admins or service role)
+CREATE OR REPLACE FUNCTION public.promote_to_admin(target_user_id uuid)
+RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = ''
 AS $$
 BEGIN
-    -- Check if the current user is a super admin
-    IF NOT EXISTS (
-        SELECT 1 FROM public.admin_roles 
-        WHERE user_id = auth.uid() 
-        AND role = 'super_admin' 
-        AND is_active = true
+    -- Check if the calling user is an admin or if this is being called with service role
+    IF NOT (
+        public.is_admin(auth.uid()) OR 
+        current_setting('role') = 'service_role'
     ) THEN
-        RAISE EXCEPTION 'Access denied: Super admin privileges required to grant admin roles';
+        RAISE EXCEPTION 'Access denied. Admin privileges required to promote users.';
     END IF;
     
-    -- Validate role type
-    IF role_type NOT IN ('admin', 'super_admin') THEN
-        RAISE EXCEPTION 'Invalid role type. Must be admin or super_admin';
-    END IF;
+    -- Update the target user's account type to admin
+    UPDATE public.accounts 
+    SET account_type = 'admin',
+        updated_at = NOW(),
+        updated_by = COALESCE(auth.uid(), target_user_id)
+    WHERE id = target_user_id;
     
-    -- Check if target user exists
-    IF NOT EXISTS (SELECT 1 FROM auth.users WHERE id = target_user_id) THEN
-        RAISE EXCEPTION 'Target user not found';
-    END IF;
-    
-    -- Insert or update the admin role
-    INSERT INTO public.admin_roles (user_id, role, granted_by)
-    VALUES (target_user_id, role_type, auth.uid())
-    ON CONFLICT (user_id, role) 
-    DO UPDATE SET 
-        is_active = true,
-        granted_at = NOW(),
-        granted_by = auth.uid();
-END;
-$$;
-
--- Function to revoke admin role
-CREATE OR REPLACE FUNCTION public.revoke_admin_role(
-    target_user_id uuid,
-    role_type text DEFAULT 'admin'
-) RETURNS void
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = ''
-AS $$
-BEGIN
-    -- Check if the current user is a super admin
-    IF NOT EXISTS (
-        SELECT 1 FROM public.admin_roles 
-        WHERE user_id = auth.uid() 
-        AND role = 'super_admin' 
-        AND is_active = true
-    ) THEN
-        RAISE EXCEPTION 'Access denied: Super admin privileges required to revoke admin roles';
-    END IF;
-    
-    -- Prevent super admins from revoking their own super admin role
-    IF target_user_id = auth.uid() AND role_type = 'super_admin' THEN
-        RAISE EXCEPTION 'Cannot revoke your own super admin role';
-    END IF;
-    
-    -- Deactivate the admin role
-    UPDATE public.admin_roles 
-    SET is_active = false
-    WHERE user_id = target_user_id AND role = role_type;
-    
+    -- Check if the update was successful
     IF NOT FOUND THEN
-        RAISE EXCEPTION 'Admin role not found for user';
+        RAISE EXCEPTION 'User with ID % not found', target_user_id;
     END IF;
 END;
 $$;
-
--- Grant execute permissions on admin role functions
-GRANT EXECUTE ON FUNCTION public.grant_admin_role(uuid, text) TO authenticated, service_role;
-GRANT EXECUTE ON FUNCTION public.revoke_admin_role(uuid, text) TO authenticated, service_role;
 
 -- Add approval status column to accounts table
 ALTER TABLE public.accounts 
@@ -331,6 +248,41 @@ BEGIN
 END;
 $$;
 
+-- Create internal function for service_role (bypasses auth check)
+CREATE OR REPLACE FUNCTION public.get_pending_users_internal()
+RETURNS TABLE(
+    id uuid,
+    name varchar(255),
+    email varchar(320),
+    requested_at timestamptz,
+    approval_status text,
+    picture_url varchar(1000),
+    email_confirmed_at timestamptz,
+    last_sign_in_at timestamptz
+)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+BEGIN
+    -- No permission check - for use with service_role only
+    RETURN QUERY
+    SELECT 
+        a.id,
+        a.name,
+        a.email,
+        a.created_at as requested_at,
+        a.approval_status,
+        a.picture_url,
+        u.email_confirmed_at,
+        u.last_sign_in_at
+    FROM public.accounts a
+    JOIN auth.users u ON a.id = u.id
+    WHERE a.approval_status = 'pending'
+    ORDER BY a.created_at DESC;
+END;
+$$;
+
 -- Create function to get approved users
 CREATE OR REPLACE FUNCTION public.get_approved_users()
 RETURNS TABLE(
@@ -356,6 +308,48 @@ BEGIN
         RAISE EXCEPTION 'Access denied: Admin privileges required to view approved users';
     END IF;
     
+    RETURN QUERY
+    SELECT 
+        a.id,
+        a.name,
+        a.email,
+        a.created_at as requested_at,
+        a.approval_status,
+        a.approved_at,
+        a.approved_by,
+        a.picture_url,
+        u.email_confirmed_at,
+        u.last_sign_in_at,
+        approver.email::text as approved_by_email
+    FROM public.accounts a
+    JOIN auth.users u ON a.id = u.id
+    LEFT JOIN auth.users approver ON a.approved_by = approver.id
+    WHERE a.approval_status = 'approved'
+    ORDER BY a.approved_at DESC;
+END;
+$$;
+
+-- Create internal function for service_role (bypasses auth check)
+CREATE OR REPLACE FUNCTION public.get_approved_users_internal()
+RETURNS TABLE(
+    id uuid,
+    name varchar(255),
+    email varchar(320),
+    requested_at timestamptz,
+    approval_status text,
+    approved_at timestamptz,
+    approved_by uuid,
+    picture_url varchar(1000),
+    email_confirmed_at timestamptz,
+    last_sign_in_at timestamptz,
+    approved_by_email text
+)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+BEGIN
+    -- No permission check - for use with service_role only
     RETURN QUERY
     SELECT 
         a.id,
@@ -429,6 +423,8 @@ END;
 $$;
 
 -- Grant execute permissions on helper functions
+GRANT EXECUTE ON FUNCTION public.is_admin(uuid) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.promote_to_admin(uuid) TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.approve_account(uuid, uuid) TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.reject_account(uuid, uuid, text) TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.get_pending_users() TO authenticated, service_role;
@@ -436,7 +432,7 @@ GRANT EXECUTE ON FUNCTION public.get_approved_users() TO authenticated, service_
 GRANT EXECUTE ON FUNCTION public.get_user_approval_status(uuid) TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.get_approval_statistics() TO authenticated, service_role;
 
--- Update the new_user_created_setup function to set new users as pending
+-- Update the new_user_created_setup function to set new users as pending and auto-promote admin@example.test
 CREATE OR REPLACE FUNCTION kit.new_user_created_setup() RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -445,6 +441,10 @@ AS $$
 DECLARE
     user_name   text;
     picture_url text;
+    user_account_type public.account_type;
+    user_approval_status text;
+    approval_timestamp timestamptz;
+    approver_id uuid;
 BEGIN
     IF new.raw_user_meta_data ->> 'name' IS NOT NULL THEN
         user_name := new.raw_user_meta_data ->> 'name';
@@ -464,13 +464,29 @@ BEGIN
         picture_url := NULL;
     END IF;
 
-    -- Create account with pending approval status
+    -- Check if this is the special admin email
+    IF new.email = 'admin@example.test' THEN
+        user_account_type := 'admin';
+        user_approval_status := 'approved';
+        approval_timestamp := NOW();
+        approver_id := new.id; -- Self-approved
+    ELSE
+        user_account_type := 'user';
+        user_approval_status := 'pending';
+        approval_timestamp := NULL;
+        approver_id := NULL;
+    END IF;
+
+    -- Create account with appropriate status and type
     INSERT INTO public.accounts(
         id,
         name,
         picture_url,
         email,
+        account_type,
         approval_status,
+        approved_at,
+        approved_by,
         created_at,
         created_by
     ) VALUES (
@@ -478,7 +494,10 @@ BEGIN
         user_name,
         picture_url,
         new.email,
-        'pending',  -- Set new users as pending by default
+        user_account_type,
+        user_approval_status,
+        approval_timestamp,
+        approver_id,
         NOW(),
         new.id
     );
@@ -576,22 +595,31 @@ GRANT SELECT ON kit.approved_users TO authenticated, service_role;
 
 /*
  * -------------------------------------------------------
- * INITIAL ADMIN SETUP INSTRUCTIONS
+ * ADMIN SETUP INSTRUCTIONS
  * -------------------------------------------------------
  * 
- * After running this migration, you need to manually create the first super admin.
- * Run the following SQL to grant super admin privileges to a user:
+ * The system now uses account_type column for admin privileges instead of admin_roles table.
  * 
- * INSERT INTO public.admin_roles (user_id, role, granted_by, is_active)
- * VALUES ('YOUR_USER_UUID_HERE', 'super_admin', 'YOUR_USER_UUID_HERE', true);
+ * AUTOMATIC ADMIN SETUP:
+ * - Users with email "admin@example.test" are automatically set as admin accounts upon registration
+ * - They will have account_type = 'admin' and approval_status = 'approved'
  * 
- * Replace 'YOUR_USER_UUID_HERE' with the actual UUID of the user who should be the first super admin.
- * You can find user UUIDs in the auth.users table.
+ * MANUAL ADMIN PROMOTION:
+ * To promote any existing user to admin, you can use:
  * 
- * After creating the first super admin, they can use the grant_admin_role() function
- * to grant admin or super_admin roles to other users.
+ * UPDATE public.accounts 
+ * SET account_type = 'admin' 
+ * WHERE email = 'user@example.com';
  * 
- * Example:
- * SELECT public.grant_admin_role('user_uuid_here', 'admin');
- * SELECT public.grant_admin_role('user_uuid_here', 'super_admin');
+ * Or use the promote_to_admin function:
+ * SELECT public.promote_to_admin('USER_UUID_HERE');
+ * 
+ * ADMIN PRIVILEGES:
+ * Admin users can:
+ * - View all pending users (get_pending_users)
+ * - View all approved users (get_approved_users)
+ * - Approve user accounts (approve_account)
+ * - Reject user accounts (reject_account)
+ * - View approval statistics (get_approval_statistics)
+ * - Promote other users to admin (promote_to_admin)
  */

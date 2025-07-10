@@ -1,12 +1,20 @@
 -- Add account type system with admin role
 -- This replaces the hardcoded email approach with a proper role-based system
 
--- Create enum for account types
-CREATE TYPE public.account_type AS ENUM ('user', 'admin', 'moderator');
+-- Create enum for account types (if not already exists)
+DO $$ BEGIN
+    CREATE TYPE public.account_type AS ENUM ('user', 'admin', 'moderator');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
--- Add account_type column to accounts table
-ALTER TABLE public.accounts 
-ADD COLUMN account_type public.account_type DEFAULT 'user' NOT NULL;
+-- Add account_type column to accounts table (if not already exists)
+DO $$ BEGIN
+    ALTER TABLE public.accounts 
+    ADD COLUMN account_type public.account_type DEFAULT 'user' NOT NULL;
+EXCEPTION
+    WHEN duplicate_column THEN null;
+END $$;
 
 -- Add comment for the new column
 COMMENT ON COLUMN public.accounts.account_type IS 'The type/role of the account (user, admin, moderator)';
@@ -25,6 +33,11 @@ SECURITY DEFINER
 SET search_path = ''
 AS $$
 BEGIN
+    -- Allow service_role to act as admin (for server-side operations)
+    IF current_setting('role') = 'service_role' THEN
+        RETURN true;
+    END IF;
+    
     -- Return true if the user has admin account type
     RETURN EXISTS (
         SELECT 1 FROM public.accounts 

@@ -2,39 +2,30 @@
  * -------------------------------------------------------
  * Fix RLS Policies for User Approval System
  * This migration fixes the infinite recursion issue in RLS policies
- * and implements proper role-based access control
+ * and implements proper role-based access control using account_type
  * -------------------------------------------------------
  */
 
--- Ensure admin_roles table exists (if not created by previous migration)
-CREATE TABLE IF NOT EXISTS public.admin_roles (
-    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-    user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    role text NOT NULL CHECK (role IN ('admin', 'super_admin')),
-    granted_at timestamp with time zone DEFAULT NOW(),
-    granted_by uuid REFERENCES auth.users(id),
-    is_active boolean DEFAULT true,
-    UNIQUE(user_id, role)
-);
+-- The admin_roles table system has been removed in favor of account_type column
+-- No need to create admin_roles table anymore
 
--- Create indexes for efficient admin role lookups (if not already created)
-CREATE INDEX IF NOT EXISTS idx_admin_roles_user_id ON public.admin_roles(user_id);
-CREATE INDEX IF NOT EXISTS idx_admin_roles_active ON public.admin_roles(user_id, is_active) WHERE is_active = true;
-
--- Helper function to check if a user is an admin (if not already created)
-CREATE OR REPLACE FUNCTION public.is_admin(user_id uuid)
+-- Helper function to check if a user is an admin using account_type (updated version)
+CREATE OR REPLACE FUNCTION public.is_admin(user_id uuid DEFAULT auth.uid())
 RETURNS boolean
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = ''
 AS $$
 BEGIN
+    -- Allow service_role to act as admin (for server-side operations)
+    IF current_setting('role') = 'service_role' THEN
+        RETURN true;
+    END IF;
+    
+    -- Return true if the user has admin account type
     RETURN EXISTS (
-        SELECT 1 
-        FROM public.admin_roles 
-        WHERE user_id = is_admin.user_id 
-        AND is_active = true
-        AND role IN ('admin', 'super_admin')
+        SELECT 1 FROM public.accounts 
+        WHERE id = user_id AND account_type = 'admin'
     );
 END;
 $$;
@@ -42,41 +33,7 @@ $$;
 -- Grant execute permission on the helper function
 GRANT EXECUTE ON FUNCTION public.is_admin(uuid) TO authenticated, service_role;
 
--- Enable RLS on admin_roles table (if not already enabled)
-ALTER TABLE public.admin_roles ENABLE ROW LEVEL SECURITY;
-
--- RLS policies for admin_roles table (if not already created)
-DROP POLICY IF EXISTS admin_roles_read ON public.admin_roles;
-DROP POLICY IF EXISTS admin_roles_super_admin_only ON public.admin_roles;
-
-CREATE POLICY admin_roles_read ON public.admin_roles FOR SELECT
-TO authenticated
-USING (
-    -- Users can read their own roles
-    user_id = auth.uid() OR
-    -- Admins can read all roles
-    public.is_admin(auth.uid())
-);
-
--- Only super admins can insert/update/delete admin roles
-CREATE POLICY admin_roles_super_admin_only ON public.admin_roles FOR ALL
-TO authenticated
-USING (
-    EXISTS (
-        SELECT 1 FROM public.admin_roles 
-        WHERE user_id = auth.uid() 
-        AND role = 'super_admin' 
-        AND is_active = true
-    )
-)
-WITH CHECK (
-    EXISTS (
-        SELECT 1 FROM public.admin_roles 
-        WHERE user_id = auth.uid() 
-        AND role = 'super_admin' 
-        AND is_active = true
-    )
-);
+-- No need for admin_roles RLS policies since we removed the table
 
 -- Drop the problematic policies that cause infinite recursion
 DROP POLICY IF EXISTS accounts_read ON public.accounts;
@@ -295,29 +252,20 @@ BEGIN
 END;
 $$;
 
--- Add admin role management functions if they don't exist
-CREATE OR REPLACE FUNCTION public.grant_admin_role(
-    target_user_id uuid,
-    role_type text DEFAULT 'admin'
-) RETURNS void
+-- Add admin role management functions using account_type system
+CREATE OR REPLACE FUNCTION public.promote_to_admin(target_user_id uuid)
+RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = ''
 AS $$
 BEGIN
-    -- Check if the current user is a super admin
-    IF NOT EXISTS (
-        SELECT 1 FROM public.admin_roles 
-        WHERE user_id = auth.uid() 
-        AND role = 'super_admin' 
-        AND is_active = true
+    -- Check if the calling user is an admin or if this is being called with service role
+    IF NOT (
+        public.is_admin(auth.uid()) OR 
+        current_setting('role') = 'service_role'
     ) THEN
-        RAISE EXCEPTION 'Access denied: Super admin privileges required to grant admin roles';
-    END IF;
-    
-    -- Validate role type
-    IF role_type NOT IN ('admin', 'super_admin') THEN
-        RAISE EXCEPTION 'Invalid role type. Must be admin or super_admin';
+        RAISE EXCEPTION 'Access denied. Admin privileges required to promote users.';
     END IF;
     
     -- Check if target user exists
@@ -325,75 +273,79 @@ BEGIN
         RAISE EXCEPTION 'Target user not found';
     END IF;
     
-    -- Insert or update the admin role
-    INSERT INTO public.admin_roles (user_id, role, granted_by)
-    VALUES (target_user_id, role_type, auth.uid())
-    ON CONFLICT (user_id, role) 
-    DO UPDATE SET 
-        is_active = true,
-        granted_at = NOW(),
-        granted_by = auth.uid();
+    -- Update the target user's account type to admin
+    UPDATE public.accounts 
+    SET account_type = 'admin',
+        updated_at = NOW(),
+        updated_by = COALESCE(auth.uid(), target_user_id)
+    WHERE id = target_user_id;
+    
+    -- Check if the update was successful
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'User with ID % not found', target_user_id;
+    END IF;
 END;
 $$;
 
--- Function to revoke admin role
-CREATE OR REPLACE FUNCTION public.revoke_admin_role(
-    target_user_id uuid,
-    role_type text DEFAULT 'admin'
-) RETURNS void
+-- Function to revoke admin privileges (demote to user)
+CREATE OR REPLACE FUNCTION public.demote_from_admin(target_user_id uuid)
+RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = ''
 AS $$
 BEGIN
-    -- Check if the current user is a super admin
-    IF NOT EXISTS (
-        SELECT 1 FROM public.admin_roles 
-        WHERE user_id = auth.uid() 
-        AND role = 'super_admin' 
-        AND is_active = true
+    -- Check if the calling user is an admin or if this is being called with service role
+    IF NOT (
+        public.is_admin(auth.uid()) OR 
+        current_setting('role') = 'service_role'
     ) THEN
-        RAISE EXCEPTION 'Access denied: Super admin privileges required to revoke admin roles';
+        RAISE EXCEPTION 'Access denied. Admin privileges required to demote users.';
     END IF;
     
-    -- Prevent super admins from revoking their own super admin role
-    IF target_user_id = auth.uid() AND role_type = 'super_admin' THEN
-        RAISE EXCEPTION 'Cannot revoke your own super admin role';
+    -- Prevent admins from demoting themselves
+    IF target_user_id = auth.uid() THEN
+        RAISE EXCEPTION 'Cannot demote yourself from admin role';
     END IF;
     
-    -- Deactivate the admin role
-    UPDATE public.admin_roles 
-    SET is_active = false
-    WHERE user_id = target_user_id AND role = role_type;
+    -- Update the target user's account type to user
+    UPDATE public.accounts 
+    SET account_type = 'user',
+        updated_at = NOW(),
+        updated_by = auth.uid()
+    WHERE id = target_user_id;
     
     IF NOT FOUND THEN
-        RAISE EXCEPTION 'Admin role not found for user';
+        RAISE EXCEPTION 'User not found';
     END IF;
 END;
 $$;
 
 -- Grant execute permissions on admin role functions
-GRANT EXECUTE ON FUNCTION public.grant_admin_role(uuid, text) TO authenticated, service_role;
-GRANT EXECUTE ON FUNCTION public.revoke_admin_role(uuid, text) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.promote_to_admin(uuid) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.demote_from_admin(uuid) TO authenticated, service_role;
 
 /*
  * -------------------------------------------------------
- * INITIAL ADMIN SETUP INSTRUCTIONS
+ * ADMIN SETUP INSTRUCTIONS
  * -------------------------------------------------------
  * 
- * After running this migration, you need to manually create the first super admin.
- * Run the following SQL to grant super admin privileges to a user:
+ * The system now uses account_type column for admin privileges instead of admin_roles table.
  * 
- * INSERT INTO public.admin_roles (user_id, role, granted_by, is_active)
- * VALUES ('YOUR_USER_UUID_HERE', 'super_admin', 'YOUR_USER_UUID_HERE', true);
+ * AUTOMATIC ADMIN SETUP:
+ * - Users with email "admin@example.test" are automatically set as admin accounts upon registration
+ * - They will have account_type = 'admin' and approval_status = 'approved'
  * 
- * Replace 'YOUR_USER_UUID_HERE' with the actual UUID of the user who should be the first super admin.
- * You can find user UUIDs in the auth.users table.
+ * MANUAL ADMIN PROMOTION:
+ * To promote any existing user to admin, you can use:
  * 
- * After creating the first super admin, they can use the grant_admin_role() function
- * to grant admin or super_admin roles to other users.
+ * UPDATE public.accounts 
+ * SET account_type = 'admin' 
+ * WHERE email = 'user@example.com';
  * 
- * Example:
- * SELECT public.grant_admin_role('user_uuid_here', 'admin');
- * SELECT public.grant_admin_role('user_uuid_here', 'super_admin');
+ * Or use the promote_to_admin function:
+ * SELECT public.promote_to_admin('USER_UUID_HERE');
+ * 
+ * To demote an admin back to user:
+ * SELECT public.demote_from_admin('USER_UUID_HERE');
  */
